@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lumina Labs - Burn Rate Analyzer</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="styles.css">
+
+    <style>
+        /* Banner Style */
+        .beta-banner {
+            background-color: #EFF6FF;
+            border: 1px solid #DBEAFE;
+            color: #1E40AF;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .result-highlight {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            line-height: 1;
+            margin: 10px 0;
+        }
+        
+        .result-sub {
+            font-size: 0.9rem;
+            color: var(--text-med);
+            font-weight: 500;
+        }
+
+        .metric-card {
+            background-color: #FAFAFA;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+        
+        .metric-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--text-light);
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .metric-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <a href="index.html" class="brand">
+            <i class="ph-fill ph-flame"></i>
+            <div class="brand-name">Lumina <span style="font-weight:400; opacity: 0.7;">Labs</span></div>
+            <div class="brand-tag">BETA</div>
+        </a>
+        <nav style="display: flex; gap: 20px;">
+            <a href="index.html" class="nav-link"><i class="ph ph-flask"></i> Calculator</a>
+            <a href="wick.html" class="nav-link"><i class="ph ph-fire"></i> Wick Finder</a>
+            <a href="burn.html" class="nav-link active"><i class="ph ph-timer"></i> Burn Rate</a>
+            <a href="guide.html" class="nav-link"><i class="ph ph-book-open"></i> Wax Guide</a>
+        </nav>
+    </header>
+
+    <div class="beta-banner">
+        <i class="ph-fill ph-info"></i>
+        <span><b>Beta Tool:</b> Results depend on accurate weighing. Ensure scale is calibrated.</span>
+    </div>
+
+    <div class="main-grid">
+        <div class="card">
+            <h2><i class="ph ph-scales"></i> Test Data</h2>
+            <p style="font-size: 0.85rem; color: var(--text-med); margin-bottom: 20px;">
+                Weigh your candle before and after a timed burn (usually 4 hours) to calculate efficiency.
+            </p>
+            
+            <div class="row">
+                <div class="form-group">
+                    <label>Weight Before (oz)</label>
+                    <input type="number" id="weightStart" placeholder="e.g. 16.5" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label>Weight After (oz)</label>
+                    <input type="number" id="weightEnd" placeholder="e.g. 16.1" step="0.01">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Duration of Burn (Hours)</label>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <button onclick="adjustTime(-1)" style="padding: 10px; border:1px solid var(--border); background:#fff; border-radius:6px; cursor:pointer;">-</button>
+                    <input type="number" id="duration" value="4" style="text-align: center;">
+                    <button onclick="adjustTime(1)" style="padding: 10px; border:1px solid var(--border); background:#fff; border-radius:6px; cursor:pointer;">+</button>
+                </div>
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid var(--border); margin: 25px 0;">
+
+            <div class="form-group">
+                <label>Original Net Weight (oz)</label>
+                <input type="number" id="netWeight" placeholder="e.g. 8.0" step="0.1">
+                <small style="display:block; margin-top:5px; color:var(--text-light); font-size:0.75rem;">
+                    How much wax you have (Do not include container weight).
+                </small>
+            </div>
+        </div>
+
+        <div class="card results-panel" style="justify-content: start;">
+            
+            <div style="text-align: center; margin-bottom: 30px;">
+                <div class="total-label">Consumption Rate</div>
+                <div class="result-highlight"><span id="rateDisplay">0.00</span> <span style="font-size: 1.5rem; font-weight: 500; color: var(--text-light);">oz/hr</span></div>
+                <div class="result-sub">Standard target: 0.15 - 0.25 oz/hr</div>
+            </div>
+
+            <div class="metric-card">
+                <div class="metric-label">Estimated Total Burn Time</div>
+                <div class="metric-value"><span id="totalLifeDisplay">0</span> Hours</div>
+            </div>
+
+            <div style="margin-top: 30px; border-top: 1px solid var(--border); padding-top: 20px;">
+                <h4 style="font-size: 0.9rem; margin: 0 0 10px 0;"><i class="ph-fill ph-lightbulb" style="color:var(--primary);"></i> Analysis</h4>
+                <p id="analysisText" style="font-size: 0.85rem; color: var(--text-med); margin: 0; line-height: 1.5;">
+                    Enter your test data to see results.
+                </p>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    const weightStart = document.getElementById('weightStart');
+    const weightEnd = document.getElementById('weightEnd');
+    const duration = document.getElementById('duration');
+    const netWeight = document.getElementById('netWeight');
+    
+    const rateDisplay = document.getElementById('rateDisplay');
+    const totalLifeDisplay = document.getElementById('totalLifeDisplay');
+    const analysisText = document.getElementById('analysisText');
+
+    function adjustTime(delta) {
+        let val = parseFloat(duration.value) || 0;
+        val += delta;
+        if(val < 1) val = 1;
+        duration.value = val;
+        calculate();
+    }
+
+    function calculate() {
+        const start = parseFloat(weightStart.value) || 0;
+        const end = parseFloat(weightEnd.value) || 0;
+        const hours = parseFloat(duration.value) || 0;
+        const totalWax = parseFloat(netWeight.value) || 0;
+
+        if (start > 0 && end > 0 && hours > 0) {
+            // Calculate Consumption
+            const consumed = start - end;
+            
+            if (consumed < 0) {
+                rateDisplay.textContent = "Error";
+                analysisText.textContent = "Ending weight cannot be higher than starting weight.";
+                return;
+            }
+
+            const rate = consumed / hours;
+            rateDisplay.textContent = rate.toFixed(3);
+
+            // Calculate Total Life
+            if (totalWax > 0) {
+                const totalLife = totalWax / rate;
+                totalLifeDisplay.textContent = totalLife.toFixed(1);
+            } else {
+                totalLifeDisplay.textContent = "--";
+            }
+
+            // Generate Analysis
+            let msg = "";
+            if (rate < 0.1) {
+                msg = "<b>Burn is very slow.</b> Use a larger wick or a specific gravity adjustment. The flame might be drowning.";
+            } else if (rate > 0.3) {
+                msg = "<b>Burn is very hot.</b> The candle is consuming wax too fast. Try a smaller wick series to extend life and reduce soot.";
+            } else {
+                msg = "<b>Optimal Range.</b> This consumption rate (0.15-0.25) typically indicates a safe, clean burn with good scent throw.";
+            }
+            analysisText.innerHTML = msg;
+
+        } else {
+            rateDisplay.textContent = "0.00";
+            totalLifeDisplay.textContent = "0";
+            analysisText.textContent = "Enter Start and End weights to analyze.";
+        }
+    }
+
+    weightStart.addEventListener('input', calculate);
+    weightEnd.addEventListener('input', calculate);
+    duration.addEventListener('input', calculate);
+    netWeight.addEventListener('input', calculate);
+</script>
+
+</body>
+</html>

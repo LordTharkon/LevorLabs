@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lumina Labs - About</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="styles.css">
+
+    <style>
+        /* extend global styles to text inputs for this page only */
+        input[type="text"], 
+        input[type="email"], 
+        textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: 'Inter', sans-serif;
+            color: var(--text-dark);
+            box-sizing: border-box;
+            background-color: #FAFAFA;
+            transition: all 0.2s;
+            resize: vertical;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            background-color: #fff;
+            box-shadow: 0 0 0 3px var(--primary-light);
+        }
+
+        /* Success Message styling */
+        .success-message {
+            background-color: #ECFDF5;
+            color: #065F46;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 500;
+            display: none; /* hidden by default */
+            margin-top: 20px;
+        }
+
+        .btn-submit {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            width: 100%;
+            padding: 14px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: background 0.2s;
+        }
+        .btn-submit:hover {
+            background-color: #C2410C; /* Darker orange */
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <a href="index.html" class="brand">
+            <i class="ph-fill ph-flame"></i>
+            <div class="brand-name">Lumina <span style="font-weight:400; opacity: 0.7;">Labs</span></div>
+            <div class="brand-tag">BETA</div>
+        </a>
+        
+        <nav style="display: flex; gap: 20px;">
+            <a href="index.html" class="nav-link">
+                <i class="ph ph-flask"></i> Calculator
+            </a>
+            
+            <a href="wick.html" class="nav-link">
+                <i class="ph ph-fire"></i> Wick Finder
+            </a>
+
+            <a href="burn.html" class="nav-link">
+                <i class="ph ph-timer"></i> Burn Rate
+            </a>
+
+            <a href="guide.html" class="nav-link">
+                <i class="ph ph-book-open"></i> Wax Guide
+            </a>
+
+            <a href="about.html" class="nav-link active">
+                <i class="ph ph-info"></i> About
+            </a>
+        </nav>
+    </header>
+
+    <div class="main-grid">
+        <div>
+            <div class="card" style="margin-bottom: 24px;">
+                <h2><i class="ph ph-handshake"></i> Affiliate Program</h2>
+                <p style="color: var(--text-med); line-height: 1.6; margin-bottom: 20px;">
+                    Are you a wax supplier, fragrance manufacturer, or candle-making influencer? We are looking for partners to integrate their products directly into our calculators.
+                </p>
+                <div style="background: #EFF6FF; padding: 15px; border-radius: 8px; border-left: 4px solid #3B82F6;">
+                    <strong style="display:block; margin-bottom: 5px; color: #1E3A8A;">Why Partner?</strong>
+                    <span style="font-size: 0.9rem; color: #1E40AF;">Get your specific wax densities and wick charts in front of makers exactly when they are formulating their recipes.</span>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2><i class="ph ph-bug"></i> Report Issues</h2>
+                <p style="color: var(--text-med); line-height: 1.6;">
+                    <b>Data accuracy is our priority.</b> If you suspect a specific gravity calculation is off, or if a wick recommendation seems dangerous, please let us know immediately.
+                </p>
+                <ul style="color: var(--text-med); font-size: 0.9rem; margin-top: 15px; padding-left: 20px; line-height: 1.6;">
+                    <li>Specific Gravity corrections</li>
+                    <li>Broken features or math errors</li>
+                    <li>Feature requests</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2><i class="ph ph-paper-plane-tilt"></i> Contact Us</h2>
+            
+            <form id="contactForm" onsubmit="handleSubmit(event)">
+                <div class="form-group">
+                    <label for="name">Your Name</label>
+                    <input type="text" id="name" placeholder="Jane Doe" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" placeholder="jane@example.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="subject">Topic</label>
+                    <select id="subject">
+                        <option value="general">General Inquiry</option>
+                        <option value="affiliate">Affiliate / Partnership</option>
+                        <option value="bug">Report a Bug / Error</option>
+                        <option value="feature">Feature Request</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="message">Message</label>
+                    <textarea id="message" rows="5" placeholder="How can we help?" required></textarea>
+                </div>
+
+                <button type="submit" class="btn-submit">
+                    Send Message <i class="ph-bold ph-arrow-right"></i>
+                </button>
+            </form>
+
+            <div id="successMessage" class="success-message">
+                <i class="ph-fill ph-check-circle" style="font-size: 1.5rem; display: block; margin: 0 auto 10px auto;"></i>
+                Message Sent!<br>
+                <span style="font-size: 0.85rem; font-weight: 400;">Thanks for reaching out. We'll get back to you shortly.</span>
+            </div>
+        </div>
+    </div>
+    
+    <div style="text-align: center; margin-top: 40px; font-size: 0.8rem; color: var(--text-light);">
+        &copy; 2025 Lumina Labs. Designed for Makers.
+    </div>
+
+</div>
+
+<script>
+    function handleSubmit(e) {
+        e.preventDefault();
+        
+        // Hide form, show success message
+        const form = document.getElementById('contactForm');
+        const success = document.getElementById('successMessage');
+        
+        // Simple visual transition
+        form.style.opacity = '0.5';
+        setTimeout(() => {
+            form.style.display = 'none';
+            success.style.display = 'block';
+        }, 400);
+
+        // NOTE: Since this is a static site, this doesn't actually email.
+        // You would connect this to a service like Formspree or Netlify Forms later.
+        console.log("Form submitted locally.");
+    }
+</script>
+
+</body>
+</html>
