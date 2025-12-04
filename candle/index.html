@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>Candle Calculator & Recipe Builder | Levor Labs</title>
+    <meta name="description" content="Free batch calculator for candle makers. Calculate fragrance oil ratios, total wax weights, and container counts for Soy, Paraffin, and Coconut waxes.">
+    <meta name="keywords" content="candle calculator, fragrance load formula, soy wax calculator, batch size calculator, Levor Labs">
+    
+    <meta property="og:title" content="Levor Labs - Candle Batch Calculator">
+    <meta property="og:description" content="Stop guessing. Calculate exact wax and fragrance weights for any container size.">
+    <meta property="og:image" content="https://levorlabs.com/social-preview.jpg">
+    <meta property="og:url" content="https://levorlabs.com/index.html">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+</head>
+<body>
+
+<div class="container">
+<header>
+    <a href="index.html" class="brand">
+        <i class="ph-fill ph-flame"></i>
+        <div class="brand-name">Levor <span style="font-weight:400; opacity: 0.7;">Labs</span></div>
+        <div class="brand-tag">BETA</div>
+    </a>
+
+    <div class="mobile-toggle" onclick="toggleMenu()">
+        <i class="ph ph-list"></i>
+    </div>
+
+    <nav class="nav-menu">
+        <a href="index.html" class="nav-link">
+            <i class="ph ph-flask"></i> Calculator
+        </a>
+        
+        <a href="wick.html" class="nav-link">
+            <i class="ph ph-fire"></i> Wick Finder
+        </a>
+
+        <a href="burn.html" class="nav-link">
+            <i class="ph ph-timer"></i> Burn Rate
+        </a>
+
+        <a href="guide.html" class="nav-link">
+            <i class="ph ph-book-open"></i> Wax Guide
+        </a>
+    </nav>
+</header>
+
+<div class="page-header">
+    <h1>Candle Calculator</h1>
+    <p>Calculate fragrance ratios and total wax weight for your container size.</p>
+</div>
+
+    <div class="main-grid">
+        <div class="card">
+            <h2><i class="ph ph-flask"></i> Formulation</h2>
+            
+            <div class="form-group">
+                <label for="waxSelector">Wax Type</label>
+                <select id="waxSelector">
+                    </select>
+            </div>
+
+            <div id="customSgContainer" class="form-group hidden">
+                <label for="customSg">Specific Gravity (from Bag/SDS)</label>
+                <input type="number" id="customSg" value="0.86" step="0.01">
+            </div>
+
+            <div class="row">
+                <div class="form-group">
+                    <label>Container Size (Water oz)</label>
+                    <input type="number" id="waterWeight" placeholder="0" step="0.1">
+                </div>
+                <div class="form-group">
+                    <label>Candle Count</label>
+                    <input type="number" id="candleCount" value="1" step="1">
+                </div>
+            </div>
+
+            <div class="slider-container">
+                <div class="slider-header">
+                    <label style="margin:0;">Fragrance Load</label>
+                    <span id="foDisplay" class="highlight-text">6%</span>
+                </div>
+                <input type="range" id="foSlider" min="0" max="15" value="6" step="0.5">
+                <div class="slider-labels">
+                    <span>0%</span>
+                    <span>Light (6%)</span>
+                    <span>Strong (10%)</span>
+                    <span>Max (12%+)</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="card results-panel">
+            <div>
+                <div class="total-section">
+                    <div class="total-label">Total Batch Weight</div>
+                    <div class="total-weight"><span id="totalWeightDisplay">0</span><span class="unit">oz</span></div>
+                </div>
+                
+                <div class="breakdown-row">
+                    <span>Wax Needed</span>
+                    <span class="value"><span id="waxNeededDisplay">0</span> <small style="font-size:0.9rem; font-weight:400; color:#9CA3AF;">oz</small></span>
+                </div>
+                
+                <div class="breakdown-row" style="border-bottom: none;">
+                    <span>Fragrance Oil</span>
+                    <span class="value" style="color: var(--primary);"><span id="foNeededDisplay">0</span> <small style="font-size:0.9rem; font-weight:400; color:#9CA3AF;">oz</small></span>
+                </div>
+            </div>
+
+            <div class="disclaimer">
+                <i class="ph ph-info" style="vertical-align: middle; margin-right:4px;"></i> 
+                Calculated using <span id="currentSgDisplay" style="font-weight:600;">0.86</span> SG density adjustment for <span id="currentWaxName" style="font-weight:600;">Soy Wax</span>.
+            </div>
+        </div>
+    </div>
+
+    <div class="info-grid">
+        <div class="card info-card">
+            <h3><i class="ph ph-thermometer-hot"></i> Melt Point</h3>
+            <p id="meltPointInfo">Always add fragrance at 185°F for most soy waxes to ensure proper binding.</p>
+        </div>
+        <div class="card info-card">
+            <h3><i class="ph ph-timer"></i> Cure Time</h3>
+            <p id="cureTimeInfo">Soy wax typically requires 2 weeks of curing for optimal hot throw performance.</p>
+        </div>
+        <div class="card info-card">
+            <h3><i class="ph ph-lightbulb"></i> Wick Tip</h3>
+            <p>If your flame flickers excessively, your wick might be too large or not trimmed to 1/4".</p>
+        </div>
+    </div>
+</div>
+
+<script src="scripts.js"></script>
+
+<script>
+
+
+
+    // --- STEP 1: THE WAX DATABASE ---
+    const waxData = [
+        { id: "g464", name: "Golden Brands 464", category: "Soy", sg: 0.86, meltMsg: "Heat to 185°F. Add Fragrance. Pour at 135°F (+/- 5°).", cureMsg: "Cure for 2 weeks." },
+        { id: "g444", name: "Golden Brands 444", category: "Soy", sg: 0.86, meltMsg: "Heat to 185°F. Pour at 125-135°F.", cureMsg: "Cure for 2 weeks." },
+        { id: "g415", name: "Golden Brands 415", category: "Soy", sg: 0.86, meltMsg: "Pure soy. Pour warmer at 140°F to reduce frosting.", cureMsg: "Cure for 2 weeks." },
+        { id: "g402", name: "Golden Brands 402", category: "Soy", sg: 0.86, meltMsg: "Heat to 185°F. Pour around 135°F.", cureMsg: "Cure for 2 weeks." },
+        { id: "g454", name: "Golden Brands 454", category: "Coco/Soy", sg: 0.86, meltMsg: "Heat to 185°F. Pour between 125-145°F.", cureMsg: "Cure for 1-2 weeks." },
+        { id: "nw_c6", name: "NatureWax C-6", category: "Coco/Soy", sg: 0.88, meltMsg: "Heat to 180°F. Pour at 160°F.", cureMsg: "Cure for 1 week." },
+        { id: "igi6006", name: "IGI 6006", category: "Para-Soy", sg: 0.88, meltMsg: "Heat to 185°F. Pour at 170°F.", cureMsg: "Cure for 3-5 days." },
+        { id: "igi4627", name: "IGI 4627 (Comfort)", category: "Paraffin", sg: 0.92, meltMsg: "Heat to 185°F. Pour at 175°F.", cureMsg: "Cure for 24-48 hours." },
+        { id: "igi4630", name: "IGI 4630 (Harmony)", category: "Paraffin", sg: 0.92, meltMsg: "Heat to 185°F. Pour at 175°F.", cureMsg: "Cure for 24-48 hours." },
+        { id: "igi6046", name: "IGI 6046", category: "Para-Coco", sg: 0.90, meltMsg: "Heat to 190°F. Pour at 170°F.", cureMsg: "Cure for 3-5 days." },
+        { id: "pb550", name: "ProBlend 550", category: "Paraffin", sg: 0.92, meltMsg: "Heat to 190°F. Pour at 170°F.", cureMsg: "Cure for 24 hours." },
+        { id: "pb600", name: "ProBlend 600", category: "Para-Soy", sg: 0.88, meltMsg: "Heat to 185°F. Pour at 160°F.", cureMsg: "Cure for 3-5 days." },
+        { id: "bees", name: "Beeswax (Generic)", category: "Natural", sg: 0.96, meltMsg: "Melt point is high (145°F). Pour hot (160°F+).", cureMsg: "Cure for 48 hours." },
+        { id: "custom", name: "Other / Custom", category: "Custom", sg: 0.86, meltMsg: "Check manufacturer instructions.", cureMsg: "Check manufacturer instructions." }
+    ];
+
+    // DOM Elements
+    const waxSelector = document.getElementById('waxSelector');
+    const waterWeightInput = document.getElementById('waterWeight');
+    const candleCountInput = document.getElementById('candleCount');
+    const foSlider = document.getElementById('foSlider');
+    const foDisplay = document.getElementById('foDisplay');
+    const totalWeightDisplay = document.getElementById('totalWeightDisplay');
+    const waxNeededDisplay = document.getElementById('waxNeededDisplay');
+    const foNeededDisplay = document.getElementById('foNeededDisplay');
+    const currentSgDisplay = document.getElementById('currentSgDisplay');
+    const currentWaxName = document.getElementById('currentWaxName');
+    const meltPointInfo = document.getElementById('meltPointInfo');
+    const cureTimeInfo = document.getElementById('cureTimeInfo');
+    const customSgContainer = document.getElementById('customSgContainer');
+    const customSgInput = document.getElementById('customSg');
+
+    // --- STEP 2: INITIALIZATION ---
+    function populateWaxes() {
+        waxData.forEach(wax => {
+            const option = document.createElement('option');
+            option.value = wax.id;
+            option.textContent = `${wax.name} (${wax.category})`;
+            waxSelector.appendChild(option);
+        });
+    }
+
+    // --- STEP 3: CALCULATION ENGINE ---
+    function calculate() {
+        const selectedId = waxSelector.value;
+        const waxInfo = waxData.find(w => w.id === selectedId);
+        
+        let sg = waxInfo.sg;
+        if (selectedId === 'custom') {
+            customSgContainer.classList.remove('hidden');
+            sg = parseFloat(customSgInput.value) || 0.86;
+        } else {
+            customSgContainer.classList.add('hidden');
+        }
+
+        const waterWeight = parseFloat(waterWeightInput.value) || 0;
+        const count = parseFloat(candleCountInput.value) || 0;
+        const fragranceLoad = parseFloat(foSlider.value) || 0;
+
+        // Specific Gravity Calculation: Water Weight * SG = Wax Weight equivalent
+        const totalBatchWeight = waterWeight * sg * count;
+        
+        // FO Load Calculation: Total / (1 + %)
+        const waxWeight = totalBatchWeight / (1 + (fragranceLoad / 100));
+        const foWeight = totalBatchWeight - waxWeight;
+
+        foDisplay.textContent = fragranceLoad + "%";
+        
+        // Display Logic
+        totalWeightDisplay.textContent = totalBatchWeight.toFixed(2);
+        waxNeededDisplay.textContent = waxWeight.toFixed(2);
+        foNeededDisplay.textContent = foWeight.toFixed(2);
+        
+        currentSgDisplay.textContent = sg;
+        currentWaxName.textContent = waxInfo.name;
+        meltPointInfo.textContent = waxInfo.meltMsg;
+        cureTimeInfo.textContent = waxInfo.cureMsg;
+    }
+
+    waxSelector.addEventListener('change', calculate);
+    waterWeightInput.addEventListener('input', calculate);
+    candleCountInput.addEventListener('input', calculate);
+    foSlider.addEventListener('input', calculate);
+    customSgInput.addEventListener('input', calculate);
+
+    populateWaxes();
+    calculate();
+</script>
+
+</body>
+
+</html>

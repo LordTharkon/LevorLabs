@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lye & Soap Calculator | Levor Labs</title>
+    <meta name="description" content="Advanced Lye Calculator for soap making. Calculate NaOH/KOH ratios, superfat, and fatty acid profiles.">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+</head>
+<body>
+
+<header>
+    <a href="../index.html" class="brand">
+        <div class="brand-icon"><i class="ph-fill ph-flask"></i></div>
+        Lye & Soap Calculator <span class="beta-tag">v0.5</span>
+    </a>
+    <div style="display: flex; gap: 15px;">
+        <a href="../index.html" style="text-decoration: none; color: var(--text-sub); font-size: 0.9rem; font-weight: 500;">Back to Hub</a>
+    </div>
+</header>
+
+<div class="app-container">
+    
+    <div class="left-col">
+        
+        <div class="card">
+            <h3>Ingredients</h3>
+				<div class="search-box">
+					<i class="ph ph-magnifying-glass search-icon"></i>
+					<input type="text" id="oilSearch" placeholder="Search or browse oils..." autocomplete="off">
+					<i class="ph-fill ph-caret-down" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--text-sub); pointer-events: none;"></i>
+					
+					<div id="oilDropdown" class="autocomplete-dropdown"></div>
+				</div>
+
+            <div id="ingredientListContainer"></div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px; padding: 10px; background: var(--input-bg); border-radius: 8px; border: 1px solid var(--border);">
+                <div>
+                    <span style="display: block; font-size: 0.75rem; font-weight: 700; color: var(--text-sub); text-transform: uppercase;">Total Oil Weight</span>
+                    <span id="totalOilDisplay" style="font-size: 1.1rem; font-weight: 700; color: var(--text-main);">0 g</span>
+                </div>
+                <button type="button" class="btn-icon-only" onclick="openModal()" title="Calculate Batch Size from Mold">
+                    <i class="ph-fill ph-magic-wand"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3><i class="ph-fill ph-gear"></i> Configuration</h3>
+            
+            <div class="form-group" style="margin-bottom: 20px; background: #EBF8FF; padding: 10px; border-radius: 8px; border: 1px solid #BEE3F8;">
+                <label style="color: #2B6CB0;">Quick Preset (Start Here)</label>
+                <select class="select-input" id="presetSelect" style="border-color: #90CDF4; font-weight: 600;">
+                    <option value="body">Standard Body Bar (Best for Beginners)</option>
+                    <option value="facial">Gentle Facial Bar (High Superfat)</option>
+                    <option value="laundry">Laundry Soap (0% Superfat)</option>
+                    <option value="custom">Custom Settings</option>
+                </select>
+            </div>
+
+            <div class="config-grid">
+                
+                <div class="form-group">
+    <label>Lye Type</label>
+    <div class="btn-group">
+        <button type="button" id="btnNaoh" class="active" onclick="setLye('NaOH')">NaOH (Bar)</button>
+        <button type="button" id="btnKoh" onclick="setLye('KOH')">KOH (Liq)</button>
+    </div>
+</div>
+
+                <div class="form-group">
+                    <label>Lye Purity (%)</label>
+                    <input type="number" class="text-input" value="100" id="lyePurity">
+                </div>
+
+                <div class="form-group">
+                    <label>Water Calculation</label>
+                    <select class="select-input" id="waterRatioType">
+                        <option value="percent">Percent of Oils (Easier)</option>
+                        <option value="ratio">Water:Lye Ratio (Advanced)</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label id="waterLabel">Water Amount (%)</label>
+                    <input type="number" class="text-input" value="38" id="waterVal"> 
+                </div>
+
+                <div class="form-group">
+                    <label>Superfat (%) <i class="ph-fill ph-info" title="Extra oil left unsaponified for moisturizing"></i></label>
+                    <input type="number" class="text-input" value="5" id="superFat">
+                </div>
+
+                <div class="form-group">
+                    <label>Fragrance (g per kg)</label>
+                    <input type="number" class="text-input" value="30" id="fragranceRatio">
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <div class="right-col">
+        <div class="card total-card">
+            <div class="total-header"><i class="ph-fill ph-flask"></i> Formula Totals</div>
+            <div class="total-grid">
+                <div class="stat-block"><span class="stat-label">Lye (<span id="lyeTypeDisplay">NaOH</span>)</span><span class="stat-value" id="resLye">0.00</span> <span class="stat-unit">g</span></div>
+                <div class="stat-block"><span class="stat-label">Water</span><span class="stat-value" id="resWater">0.00</span> <span class="stat-unit">g</span></div>
+                <div class="stat-block"><span class="stat-label">Oils</span><span class="stat-value" id="resOils">0.00</span> <span class="stat-unit">g</span></div>
+                <div class="stat-block"><span class="stat-label">Fragrance</span><span class="stat-value" id="resFrag">0.00</span> <span class="stat-unit">g</span></div>
+            </div>
+            <div class="grand-total"><span class="stat-label" style="font-size: 1rem;">Total Batch Weight</span><div><span class="big-total" id="resTotal">0.00</span> <span class="stat-unit" style="font-size: 1.2rem;">g</span></div></div>
+        </div>
+
+        <div class="analysis-grid">
+            <div class="card chart-card">
+                <h3><i class="ph-fill ph-chart-polar"></i> Qualities</h3>
+                <div class="chart-container">
+                    <canvas id="soapChart"></canvas>
+                </div>
+            </div>
+            <div class="card values-card">
+                <h3>Values</h3>
+                <div id="qualityList"></div>
+            </div>
+        </div>
+        <div class="card">
+            <h3>FATTY ACID PROFILE</h3>
+            <div class="acid-container" id="acidProfile"></div>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="moldModal">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h3><i class="ph-fill ph-ruler"></i> Batch Sizer</h3>
+            <button class="modal-close" onclick="closeModal()"><i class="ph-bold ph-x"></i></button>
+        </div>
+        
+        <div class="tab-group">
+            <button class="tab-btn active" onclick="switchTab('box')" id="tabBox">Box Mold</button>
+            <button class="tab-btn" onclick="switchTab('cyl')" id="tabCyl">Tube Mold</button>
+        </div>
+
+        <div id="boxForm">
+            <div class="config-grid">
+                <div class="form-group"><label>Length (cm)</label><input type="number" class="text-input" id="boxL" value="25"></div>
+                <div class="form-group"><label>Width (cm)</label><input type="number" class="text-input" id="boxW" value="9"></div>
+                <div class="form-group"><label>Height (cm)</label><input type="number" class="text-input" id="boxH" value="7"></div>
+            </div>
+        </div>
+
+        <div id="cylForm" style="display:none;">
+            <div class="config-grid">
+                <div class="form-group"><label>Diameter (cm)</label><input type="number" class="text-input" id="cylD" value="7.5"></div>
+                <div class="form-group"><label>Height (cm)</label><input type="number" class="text-input" id="cylH" value="25"></div>
+            </div>
+        </div>
+
+        <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border);">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                <span style="color: var(--text-sub);">Calculated Oils:</span>
+                <strong style="color: var(--primary-blue);" id="calcOilResult">0 g</strong>
+            </div>
+            <button type="button" onclick="applyBatchSize()" class="btn-primary">Apply to Recipe</button>
+        </div>
+    </div>
+</div>
+
+
+<footer style="text-align: center; margin: 40px 0; color: var(--text-sub); font-size: 0.8rem;">
+    <p>Data Source: Averages based on standard SAP values (SoapCalc/WSP).</p>
+    <p>Always run a small test batch when using new ingredients.</p>
+</footer>
+
+<script>
+    // --- DATA ---
+const oilDB = {
+        // --- HARD OILS & BUTTERS ---
+        "Coconut Oil (76deg)": { sap: 0.190, fa: { lau: 48, myr: 19, pal: 9, ste: 3, ole: 8, lin: 2 } },
+        "Palm Oil": { sap: 0.141, fa: { pal: 44, ste: 5, ole: 39, lin: 10 } },
+        "Lard (Pig Tallow)": { sap: 0.138, fa: { pal: 26, ste: 14, ole: 44, lin: 10 } },
+        "Tallow (Beef)": { sap: 0.140, fa: { myr: 3, pal: 26, ste: 19, ole: 43, lin: 3 } },
+        "Shea Butter": { sap: 0.128, fa: { pal: 5, ste: 40, ole: 48, lin: 6 } },
+        "Cocoa Butter": { sap: 0.137, fa: { pal: 28, ste: 33, ole: 35, lin: 3 } },
+        "Mango Butter": { sap: 0.135, fa: { pal: 12, ste: 42, ole: 40, lin: 3 } },
+        "Babassu Oil": { sap: 0.175, fa: { lau: 50, myr: 20, pal: 6, ste: 3, ole: 10, lin: 2 } },
+        "Beeswax": { sap: 0.067, fa: { pal: 10, ste: 10 } }, // Low sap, mostly for hardness
+        "Palm Kernel Oil": { sap: 0.176, fa: { lau: 49, myr: 16, pal: 8, ste: 2, ole: 15, lin: 3 } },
+
+        // --- SOFT / LIQUID OILS ---
+        "Olive Oil": { sap: 0.134, fa: { pal: 13, ste: 3, ole: 71, lin: 10 } },
+        "Olive Oil (Pomace)": { sap: 0.134, fa: { pal: 15, ste: 2, ole: 69, lin: 12 } },
+        "Sweet Almond Oil": { sap: 0.137, fa: { pal: 7, ste: 2, ole: 70, lin: 17 } },
+        "Avocado Oil": { sap: 0.133, fa: { pal: 20, ste: 2, ole: 58, lin: 12 } },
+        "Castor Oil": { sap: 0.128, fa: { ric: 90, ole: 4, lin: 4 } },
+        "Rice Bran Oil": { sap: 0.135, fa: { pal: 22, ste: 3, ole: 38, lin: 34 } },
+        "Sunflower Oil (High Oleic)": { sap: 0.135, fa: { pal: 3, ste: 4, ole: 83, lin: 4 } },
+        "Sunflower Oil (Regular)": { sap: 0.134, fa: { pal: 6, ste: 3, ole: 17, lin: 70 } },
+        "Canola Oil": { sap: 0.132, fa: { pal: 4, ste: 2, ole: 61, lin: 21 } },
+        "Hemp Seed Oil": { sap: 0.135, fa: { pal: 6, ste: 2, ole: 12, lin: 57 } },
+        "Grapeseed Oil": { sap: 0.129, fa: { pal: 8, ste: 4, ole: 20, lin: 68 } },
+        "Jojoba Oil": { sap: 0.069, fa: { ole: 12, lin: 1 } }, // Actually a wax ester
+        "Neem Oil": { sap: 0.136, fa: { pal: 18, ste: 15, ole: 46, lin: 15 } },
+        "Argan Oil": { sap: 0.136, fa: { pal: 13, ste: 5, ole: 45, lin: 35 } },
+    };
+
+    const qualityMap = {
+        "Hardness": (fa) => (fa.lau || 0) + (fa.myr || 0) + (fa.pal || 0) + (fa.ste || 0),
+        "Cleansing": (fa) => (fa.lau || 0) + (fa.myr || 0),
+        "Conditioning": (fa) => (fa.ole || 0) + (fa.lin || 0) + (fa.ric || 0),
+        "Bubbly": (fa) => (fa.lau || 0) + (fa.myr || 0) + (fa.ric || 0),
+        "Creamy": (fa) => (fa.pal || 0) + (fa.ste || 0) + (fa.ric || 0)
+    };
+    const rangeGuide = { "Hardness": "29-54", "Cleansing": "12-22", "Conditioning": "44-69", "Bubbly": "14-46", "Creamy": "16-48" };
+
+    // --- STATE ---
+    let recipe = [
+        { name: "Olive Oil", weight: 500 },
+        { name: "Coconut Oil (76deg)", weight: 200 }
+    ];
+    let currentLye = "NaOH";
+
+    // --- DOM ---
+    const listContainer = document.getElementById('ingredientListContainer');
+    const oilSearch = document.getElementById('oilSearch');
+    const oilList = document.getElementById('oilList');
+    const superFatInput = document.getElementById('superFat');
+    const waterValInput = document.getElementById('waterVal');
+    const waterRatioType = document.getElementById('waterRatioType');
+    const fragRatioInput = document.getElementById('fragranceRatio');
+    const presetSelect = document.getElementById('presetSelect');
+    const waterLabel = document.getElementById('waterLabel');
+    const lyePurityInput = document.getElementById('lyePurity');
+
+    // --- PRESETS LOGIC ---
+    const presets = {
+        body: { sf: 5, waterMode: 'percent', waterVal: 38 },
+        facial: { sf: 8, waterMode: 'percent', waterVal: 35 },
+        laundry: { sf: 0, waterMode: 'percent', waterVal: 33 }
+    };
+
+    presetSelect.addEventListener('change', (e) => {
+        const val = e.target.value;
+        if (val === 'custom') return;
+        
+        const p = presets[val];
+        superFatInput.value = p.sf;
+        waterRatioType.value = p.waterMode;
+        waterValInput.value = p.waterVal;
+        calculateFormula();
+    });
+
+// Helper for Lye Buttons
+    window.setLye = (type) => {
+        currentLye = type;
+        document.getElementById('lyeTypeDisplay').textContent = type;
+        
+        // Toggle classes instead of inline styles
+        const btnNaoh = document.getElementById('btnNaoh');
+        const btnKoh = document.getElementById('btnKoh');
+        
+        if (type === 'NaOH') {
+            btnNaoh.classList.add('active');
+            btnKoh.classList.remove('active');
+        } else {
+            btnNaoh.classList.remove('active');
+            btnKoh.classList.add('active');
+        }
+        
+        calculateFormula();
+    };
+
+    waterRatioType.addEventListener('change', (e) => {
+        if (e.target.value === 'percent') {
+            waterLabel.textContent = "Water Amount (%)";
+            waterValInput.value = 38;
+        } else {
+            waterLabel.textContent = "Water : Lye Ratio";
+            waterValInput.value = 2.0;
+        }
+        calculateFormula();
+    });
+
+
+// --- DROPDOWN LOGIC ---
+    const searchInput = document.getElementById('oilSearch');
+    const dropdown = document.getElementById('oilDropdown');
+
+    // Unified render function
+    function renderDropdown(filterText = '') {
+        dropdown.innerHTML = ''; // Clear previous results
+        const val = filterText.toLowerCase();
+
+        // IF text exists, filter. IF empty, show ALL oils.
+        const matches = val 
+            ? Object.keys(oilDB).filter(oil => oil.toLowerCase().includes(val))
+            : Object.keys(oilDB);
+        
+        if (matches.length > 0) {
+            matches.forEach(oil => {
+                const div = document.createElement('div');
+                div.className = 'dropdown-item';
+                div.textContent = oil;
+                div.onclick = () => selectOil(oil);
+                dropdown.appendChild(div);
+            });
+            dropdown.classList.add('show');
+        } else {
+            dropdown.classList.remove('show');
+        }
+    }
+
+    // 1. Listen for typing (Filter)
+    searchInput.addEventListener('input', (e) => {
+        renderDropdown(e.target.value);
+    });
+
+    // 2. Listen for click/focus (Browse)
+    searchInput.addEventListener('focus', () => {
+        // Show current results (or full list if empty)
+        renderDropdown(searchInput.value);
+    });
+
+    // 3. Select Oil Function
+    window.selectOil = (oilName) => {
+        recipe.push({ name: oilName, weight: 100 });
+        searchInput.value = ''; 
+        dropdown.classList.remove('show');
+        renderList();
+    };
+
+    // 4. Close menu if clicking outside
+    document.addEventListener('click', (e) => {
+        if (!searchInput.contains(e.target) && !dropdown.contains(e.target)) {
+            dropdown.classList.remove('show');
+        }
+    });
+
+
+
+// --- MODAL LOGIC ---
+    const modal = document.getElementById('moldModal');
+    let currentShape = 'box';
+
+    window.openModal = () => { 
+        modal.classList.add('open'); 
+        calcMoldVol(); // Run calc on open
+    };
+    window.closeModal = () => { modal.classList.remove('open'); };
+
+    // Close on click outside
+    modal.addEventListener('click', (e) => { if(e.target === modal) closeModal(); });
+
+    window.switchTab = (shape) => {
+        currentShape = shape;
+        document.getElementById('tabBox').className = shape === 'box' ? 'tab-btn active' : 'tab-btn';
+        document.getElementById('tabCyl').className = shape === 'cyl' ? 'tab-btn active' : 'tab-btn';
+        document.getElementById('boxForm').style.display = shape === 'box' ? 'block' : 'none';
+        document.getElementById('cylForm').style.display = shape === 'cyl' ? 'block' : 'none';
+        calcMoldVol();
+    };
+
+    function calcMoldVol() {
+        let volume = 0;
+        if (currentShape === 'box') {
+            const l = parseFloat(document.getElementById('boxL').value) || 0;
+            const w = parseFloat(document.getElementById('boxW').value) || 0;
+            const h = parseFloat(document.getElementById('boxH').value) || 0;
+            volume = l * w * h;
+        } else {
+            const d = parseFloat(document.getElementById('cylD').value) || 0;
+            const h = parseFloat(document.getElementById('cylH').value) || 0;
+            const r = d / 2;
+            volume = Math.PI * (r * r) * h;
+        }
+        
+        // Oil Weight Factor: 0.7g per cm3 is a safe standard for soap batter
+        // (Water is 1.0, Oil is 0.9, but allows for lye water + air)
+        const oilWeight = volume * 0.7; 
+        document.getElementById('calcOilResult').textContent = Math.round(oilWeight) + " g";
+        return oilWeight;
+    }
+
+    // Live update on inputs
+    ['boxL', 'boxW', 'boxH', 'cylD', 'cylH'].forEach(id => {
+        document.getElementById(id).addEventListener('input', calcMoldVol);
+    });
+
+    window.applyBatchSize = () => {
+        const newTotal = calcMoldVol();
+        if (newTotal <= 0) return;
+
+        // Scale existing recipe to match new total
+        const currentTotal = recipe.reduce((sum, item) => sum + item.weight, 0);
+        if (currentTotal > 0) {
+            const ratio = newTotal / currentTotal;
+            recipe.forEach(item => {
+                item.weight = parseFloat((item.weight * ratio).toFixed(1));
+            });
+        } else {
+            // If recipe is empty, warn user or just set a default (but here we just close)
+        }
+        
+        renderList();
+        closeModal();
+    };
+
+
+
+
+
+
+
+    // --- LOGIC ---
+function renderList() {
+        listContainer.innerHTML = '';
+        let totalW = recipe.reduce((sum, item) => sum + item.weight, 0);
+
+        recipe.forEach((item, index) => {
+            let percent = totalW > 0 ? ((item.weight / totalW) * 100).toFixed(1) : 0;
+            
+            // Get the SAP value for display
+            // We show the NaOH version by default as it's the standard reference
+            const sapVal = oilDB[item.name] ? oilDB[item.name].sap : '?.???';
+
+            const div = document.createElement('div');
+            div.className = 'ingredient-row';
+            div.innerHTML = `
+                <div class="ing-info">
+                    <span class="ing-name">${item.name}</span>
+                    <div style="display: flex; gap: 8px; align-items: center; margin-top: 4px;">
+                        <span class="sap-badge" title="Saponification Value">SAP: ${sapVal}</span>
+                        <span class="ing-sub">${percent}%</span>
+                    </div>
+                </div>
+                <div class="ing-controls">
+                    <div class="mini-input-group">
+                        <input type="number" class="mini-input" value="${item.weight}" oninput="updateWeight(${index}, this.value)">
+                        <span class="unit-label">g</span>
+                    </div>
+                    <button type="button" class="btn-delete" onclick="removeOil(${index})"><i class="ph-fill ph-trash"></i></button>
+                </div>
+            `;
+            listContainer.appendChild(div);
+        });
+        calculateFormula();
+    }
+
+    // Exposed to window for inline calls
+    window.updateWeight = (index, val) => { 
+        recipe[index].weight = parseFloat(val) || 0; 
+        // We do NOT call renderList here to avoid losing input focus, just calc
+        // However, we need to update the % text in the UI. 
+        // For simplicity, we'll just recalculate totals. To update % dynamically requires binding.
+        // For now, let's just calc totals.
+        calculateFormula();
+    };
+    
+    // Trigger full re-render on blur to fix percentages
+    listContainer.addEventListener('focusout', (e) => {
+        if(e.target.classList.contains('mini-input')) {
+            renderList();
+        }
+    });
+
+    window.removeOil = (index) => { recipe.splice(index, 1); renderList(); };
+    
+
+    function calculateFormula() {
+        const totalOilWeight = recipe.reduce((sum, item) => sum + item.weight, 0);
+        const superFat = parseFloat(superFatInput.value) || 0;
+        const waterMode = waterRatioType.value;
+        const waterVal = parseFloat(waterValInput.value) || 0;
+        const fragRatio = parseFloat(fragRatioInput.value) || 0;
+        const purity = parseFloat(lyePurityInput.value) || 100;
+
+        let totalLyeNeeded = 0;
+        let combinedFA = {};
+
+        recipe.forEach(item => {
+            const oil = oilDB[item.name];
+            if (!oil) return;
+
+            let sap = oil.sap;
+            if (currentLye === 'KOH') sap = sap * 1.403; // Convert NaOH sap to KOH
+
+            totalLyeNeeded += (item.weight * sap);
+
+            if (oil.fa) {
+                Object.keys(oil.fa).forEach(acid => {
+                    if (!combinedFA[acid]) combinedFA[acid] = 0;
+                    // Weighted average calculation
+                    combinedFA[acid] += (oil.fa[acid] * (item.weight / (totalOilWeight || 1))); 
+                });
+            }
+        });
+
+        // Superfat Math: Discount the lye amount
+        const lyeAfterSF = totalLyeNeeded * (1 - (superFat / 100));
+        
+        // Purity Math: If purity is 90%, we need MORE lye to get the active chemical.
+        const actualLyeWeight = lyeAfterSF / (purity / 100);
+
+        let waterWeight = 0;
+        
+        if (waterMode === 'percent') {
+            waterWeight = totalOilWeight * (waterVal / 100);
+        } else {
+            waterWeight = actualLyeWeight * waterVal; 
+        }
+
+        const fragWeight = (totalOilWeight / 1000) * fragRatio;
+
+        document.getElementById('resLye').textContent = actualLyeWeight.toFixed(2);
+        document.getElementById('resWater').textContent = waterWeight.toFixed(2);
+        document.getElementById('resOils').textContent = totalOilWeight.toFixed(2);
+        document.getElementById('resFrag').textContent = fragWeight.toFixed(2);
+        document.getElementById('resTotal').textContent = (totalOilWeight + actualLyeWeight + waterWeight + fragWeight).toFixed(2);
+        document.getElementById('totalOilDisplay').textContent = totalOilWeight + " g";
+
+        updateAnalysis(combinedFA);
+    }
+
+    let radarChart = null;
+    function updateAnalysis(faProfile) {
+        const qualities = {
+            "Hardness": qualityMap["Hardness"](faProfile),
+            "Cleansing": qualityMap["Cleansing"](faProfile),
+            "Conditioning": qualityMap["Conditioning"](faProfile),
+            "Bubbly": qualityMap["Bubbly"](faProfile),
+            "Creamy": qualityMap["Creamy"](faProfile)
+        };
+
+        const qContainer = document.getElementById('qualityList');
+        qContainer.innerHTML = '';
+        Object.keys(rangeGuide).forEach(q => {
+            const row = document.createElement('div');
+            row.className = 'quality-row';
+            row.innerHTML = `<span class="q-name">${q}</span><div><span class="q-range">(${rangeGuide[q]})</span><span class="q-val">${Math.round(qualities[q])}</span></div>`;
+            qContainer.appendChild(row);
+        });
+
+        const acidContainer = document.getElementById('acidProfile');
+        acidContainer.innerHTML = '';
+        Object.keys(faProfile).forEach(key => {
+            if (faProfile[key] > 0) {
+                const tag = document.createElement('div');
+                tag.className = 'acid-tag';
+                tag.innerHTML = `<span class="acid-name">${key.toUpperCase()}</span><span class="acid-val">${Math.round(faProfile[key])}</span>`;
+                acidContainer.appendChild(tag);
+            }
+        });
+
+        updateChart(qualities);
+    }
+
+    function updateChart(q) {
+        const dataValues = [q.Hardness, q.Cleansing, q.Conditioning, q.Bubbly, q.Creamy];
+        if (radarChart) {
+            radarChart.data.datasets[0].data = dataValues;
+            radarChart.update();
+        } else {
+            const ctx = document.getElementById('soapChart').getContext('2d');
+            radarChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: ['Hardness', 'Cleansing', 'Conditioning', 'Bubbly', 'Creamy'],
+                    datasets: [{
+                        label: 'Profile',
+                        data: dataValues,
+                        backgroundColor: 'rgba(15, 76, 117, 0.2)',
+                        borderColor: '#0F4C75',
+                        pointBackgroundColor: '#0F4C75',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    scales: { r: { suggestedMin: 0, suggestedMax: 100, ticks: { display: false, stepSize: 20 } } },
+                    plugins: { legend: { display: false } }
+                }
+            });
+        }
+    }
+
+    // Use 'input' event for real-time calc
+    superFatInput.addEventListener('input', calculateFormula);
+    waterValInput.addEventListener('input', calculateFormula);
+    fragRatioInput.addEventListener('input', calculateFormula);
+    lyePurityInput.addEventListener('input', calculateFormula);
+    
+    // Initial Run
+    renderList();
+</script>
+</body>
+</html>
