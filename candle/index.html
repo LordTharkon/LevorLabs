@@ -72,13 +72,18 @@
 
     <div class="main-grid">
         <div class="card">
-            <h2><i class="ph ph-flask"></i> Formulation</h2>
-            
-            <div class="form-group">
-                <label for="waxSelector">Wax Type</label>
-                <select id="waxSelector">
-                    </select>
-            </div>
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
+        <h2 style="margin-bottom:0;"><i class="ph ph-flask"></i> Formulation</h2>
+        
+        <div class="unit-toggle" style="background:#f3f4f6; padding:4px; border-radius:8px; display:flex; gap:4px;">
+            <button id="btnOz" onclick="setUnit('oz')" style="border:none; background:#fff; padding:4px 12px; border-radius:6px; font-weight:600; font-size:0.85rem; box-shadow:0 1px 2px rgba(0,0,0,0.1); cursor:pointer;">oz</button>
+            <button id="btnG" onclick="setUnit('g')" style="border:none; background:transparent; padding:4px 12px; border-radius:6px; font-weight:500; font-size:0.85rem; color:#6b7280; cursor:pointer;">g</button>
+        </div>
+    </div> <div class="form-group">
+        <label for="waxSelector">Wax Type</label>
+        <select id="waxSelector"></select>
+    </div>
+			
 
             <div id="customSgContainer" class="form-group hidden">
                 <label for="customSg">Specific Gravity (from Bag/SDS)</label>
@@ -87,7 +92,7 @@
 
             <div class="row">
                 <div class="form-group">
-                    <label>Container Size (Water oz)</label>
+                    <label>Container Size (Water <span class="unit-label">oz</span>)</label>
                     <input type="number" id="waterWeight" placeholder="0" step="0.1">
                 </div>
                 <div class="form-group">
@@ -115,18 +120,18 @@
             <div>
                 <div class="total-section">
                     <div class="total-label">Total Batch Weight</div>
-                    <div class="total-weight"><span id="totalWeightDisplay">0</span><span class="unit">oz</span></div>
+                    <div class="total-weight"><span id="totalWeightDisplay">0</span><span class="unit unit-label">oz</span></div>
                 </div>
                 
                 <div class="breakdown-row">
-                    <span>Wax Needed</span>
-                    <span class="value"><span id="waxNeededDisplay">0</span> <small style="font-size:0.9rem; font-weight:400; color:#9CA3AF;">oz</small></span>
-                </div>
-                
-                <div class="breakdown-row" style="border-bottom: none;">
-                    <span>Fragrance Oil</span>
-                    <span class="value" style="color: var(--primary);"><span id="foNeededDisplay">0</span> <small style="font-size:0.9rem; font-weight:400; color:#9CA3AF;">oz</small></span>
-                </div>
+    <span>Wax Needed</span>
+    <span class="value"><span id="waxNeededDisplay">0</span> <small class="unit-label" style="font-size:0.9rem; font-weight:400; color:#9CA3AF;">oz</small></span>
+</div>
+
+<div class="breakdown-row" style="border-bottom: none;">
+    <span>Fragrance Oil</span>
+    <span class="value" style="color: var(--primary);"><span id="foNeededDisplay">0</span> <small class="unit-label" style="font-size:0.9rem; font-weight:400; color:#9CA3AF;">oz</small></span>
+</div>
             </div>
 
             <div class="disclaimer">
@@ -176,8 +181,8 @@ const waxData = [
         { id: "custom", name: "Other / Custom", category: "Custom", sg: 0.86, meltMsg: "Check manufacturer instructions.", cureMsg: "Check manufacturer instructions." }
     ];
 
-    // DOM Elements
-    const waxSelector = document.getElementById('waxSelector');
+    // DOM DOM DE DOM DOM
+	const waxSelector = document.getElementById('waxSelector');
     const waterWeightInput = document.getElementById('waterWeight');
     const candleCountInput = document.getElementById('candleCount');
     const foSlider = document.getElementById('foSlider');
@@ -192,6 +197,57 @@ const waxData = [
     const customSgContainer = document.getElementById('customSgContainer');
     const customSgInput = document.getElementById('customSg');
 
+// Unit Toggles
+    const btnOz = document.getElementById('btnOz');
+    const btnG = document.getElementById('btnG');
+    const unitLabels = document.querySelectorAll('.unit-label');
+    let currentUnit = 'oz'; // Default
+
+    // --- UNIT HANDLING ---
+    function setUnit(unit) {
+        if (unit === currentUnit) return;
+
+        // Visual Toggle State
+        if (unit === 'g') {
+            btnG.style.background = '#fff';
+            btnG.style.boxShadow = '0 1px 2px rgba(0,0,0,0.1)';
+            btnG.style.fontWeight = '600';
+            btnG.style.color = '#000';
+            
+            btnOz.style.background = 'transparent';
+            btnOz.style.boxShadow = 'none';
+            btnOz.style.fontWeight = '500';
+            btnOz.style.color = '#6b7280';
+            
+            // Convert Input Value: oz -> g
+            if (waterWeightInput.value) {
+                waterWeightInput.value = (parseFloat(waterWeightInput.value) * 28.3495).toFixed(1);
+            }
+        } else {
+            btnOz.style.background = '#fff';
+            btnOz.style.boxShadow = '0 1px 2px rgba(0,0,0,0.1)';
+            btnOz.style.fontWeight = '600';
+            btnOz.style.color = '#000';
+            
+            btnG.style.background = 'transparent';
+            btnG.style.boxShadow = 'none';
+            btnG.style.fontWeight = '500';
+            btnG.style.color = '#6b7280';
+
+            // Convert Input Value: g -> oz
+            if (waterWeightInput.value) {
+                waterWeightInput.value = (parseFloat(waterWeightInput.value) / 28.3495).toFixed(2);
+            }
+        }
+
+        currentUnit = unit;
+        
+        // Update all text labels
+        unitLabels.forEach(el => el.textContent = unit);
+        
+        calculate();
+    }
+
     // --- STEP 2: INITIALIZATION ---
     function populateWaxes() {
         waxData.forEach(wax => {
@@ -205,7 +261,7 @@ const waxData = [
     // --- STEP 3: CALCULATION ENGINE ---
     function calculate() {
         const selectedId = waxSelector.value;
-        const waxInfo = waxData.find(w => w.id === selectedId);
+        const waxInfo = waxData.find(w => w.id === selectedId) || waxData[0];
         
         let sg = waxInfo.sg;
         if (selectedId === 'custom') {
@@ -219,16 +275,15 @@ const waxData = [
         const count = parseFloat(candleCountInput.value) || 0;
         const fragranceLoad = parseFloat(foSlider.value) || 0;
 
-        // Specific Gravity Calculation: Water Weight * SG = Wax Weight equivalent
+        // Math is unit agnostic because SG is a ratio.
+        // If input is grams, output is grams. If input is oz, output is oz.
         const totalBatchWeight = waterWeight * sg * count;
         
-        // FO Load Calculation: Total / (1 + %)
         const waxWeight = totalBatchWeight / (1 + (fragranceLoad / 100));
         const foWeight = totalBatchWeight - waxWeight;
 
         foDisplay.textContent = fragranceLoad + "%";
         
-        // Display Logic
         totalWeightDisplay.textContent = totalBatchWeight.toFixed(2);
         waxNeededDisplay.textContent = waxWeight.toFixed(2);
         foNeededDisplay.textContent = foWeight.toFixed(2);

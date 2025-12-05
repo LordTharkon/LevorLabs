@@ -5,13 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <title>Wick Finder & Size Guide | LevorLabs</title>
-    <meta name="description" content="Find the perfect wick size for your candle. Interactive recommendations for CD, ECO, LX, and Zinc wicks based on jar diameter and wax type.">
-    <meta name="keywords" content="candle wick size chart, wick finder, CD wick guide, ECO wick guide, double wicking calculator">
+    <meta name="description" content="Find the perfect wick size for your candle. Interactive recommendations for CD (Stabilo), ECO, LX, and Zinc wicks based on jar diameter and wax type.">
+    <meta name="keywords" content="candle wick size chart, wick finder, CD (Stabilo) wick guide, ECO wick guide, double wicking calculator">
     
     <meta property="og:title" content="LevorLabs - Interactive Wick Finder">
     <meta property="og:description" content="Don't know which wick to use? Enter your jar diameter and get an instant recommendation.">
     <meta property="og:image" content="https://levorlabs.com/social-preview.jpg">
-    <meta property="og:url" content="https://levorlabs.com/wick.html">
+    <meta property="og:url" content="https://levorlabs.com/candle/wick.html">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -193,29 +193,32 @@
             </div>
         </div>
 
-        <div class="card results-panel" style="justify-content: start;">
-            <div class="total-section">
-                <div class="total-label">Recommended Start</div>
-                <div class="total-weight" style="font-size: 2.5rem; color: var(--primary);">
-                    <span id="recSeries">CD</span> <span id="recSize">12</span>
-                </div>
-                <div id="altOption" style="margin-top:10px; font-size: 0.9rem; color: var(--text-med);">
-                    or <span style="font-weight:600;">ECO 10</span>
-                </div>
-            </div>
+<div class="card results-panel" style="justify-content: start;">
+    <div class="total-section">
+        <div class="total-label">Recommended Start</div>
+        
+        <div class="total-weight" style="font-size: 2.5rem; color: var(--primary); line-height: 1.2;">
+            <span id="recSeries">CD</span> <span id="recSize">12</span>
+        </div>
 
-            <div id="personalityContainer" class="personality-container">
-                </div>
+        <div id="seriesSubtitle" style="height: 20px; font-size: 0.85rem; color: var(--text-med); font-weight: 500; margin-bottom: 5px;">
+            (Stabilo Series)
+        </div>
+
+        <div id="altOption" style="font-size: 0.9rem; color: var(--text-med);">
+            or <span style="font-weight:600;">ECO 10</span>
         </div>
     </div>
+
+    <div id="personalityContainer" class="personality-container">
+    </div>
+</div>
 </div>
 
 
 <script src="scripts.js"></script>
 
 <script>
-
-
     const diameterInput = document.getElementById('diameterInput');
     const diaSlider = document.getElementById('diaSlider');
     const waxSelector = document.getElementById('waxFamily');
@@ -224,6 +227,7 @@
     
     const recSeries = document.getElementById('recSeries');
     const recSize = document.getElementById('recSize');
+    const seriesSubtitle = document.getElementById('seriesSubtitle'); // NEW REF
     const altOption = document.getElementById('altOption');
     const personalityContainer = document.getElementById('personalityContainer');
 
@@ -325,15 +329,14 @@
         }
 
         // --- RENDER UI ---
-        
         let htmlContent = '';
 
         if (pSeries === "Double Wick") {
             recSeries.textContent = "Double Wick";
             recSize.textContent = "Required";
+            seriesSubtitle.textContent = ""; // Clear subtitle
             altOption.innerHTML = "Try two wicks 50% smaller than single.";
             
-            // Render Description
             htmlContent += renderDescription("DOUBLE WICKING", personalities["Double Wick"]);
 
         } else {
@@ -343,13 +346,28 @@
             const altName = secSeries;
             const altSize = wickData[secSeries][finalSIdx];
 
+            // --- FIXED: Subtitle approach for CD/Stabilo ---
             recSeries.textContent = pSeries;
             recSize.textContent = wickData[pSeries][finalPIdx];
-            altOption.innerHTML = `or <span style="font-weight:600;">${altName} ${altSize}</span>`;
+
+            if (pSeries === 'CD') {
+                seriesSubtitle.textContent = "(Stabilo Series)";
+            } else {
+                seriesSubtitle.textContent = "";
+            }
             
-            // Render BOTH Descriptions
-            htmlContent += renderDescription(pSeries, personalities[pSeries]);
-            htmlContent += renderDescription(secSeries, personalities[secSeries]);
+            // Handle Alternative text
+            let displayAltName = altName;
+            if (altName === 'CD') displayAltName = 'CD (Stabilo)';
+            
+            altOption.innerHTML = `or <span style="font-weight:600;">${displayAltName} ${altSize}</span>`;
+            
+            // Render Descriptions
+            const pTitle = (pSeries === 'CD') ? 'CD (STABILO)' : pSeries;
+            const sTitle = (secSeries === 'CD') ? 'CD (STABILO)' : secSeries;
+
+            htmlContent += renderDescription(pTitle, personalities[pSeries]);
+            htmlContent += renderDescription(sTitle, personalities[secSeries]);
         }
 
         // Inject into DOM
