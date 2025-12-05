@@ -39,6 +39,15 @@
     <link rel="stylesheet" href="style.css">
     <link rel="icon" type="image/svg+xml" href="../favicon.svg">
 </head>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-DYD8L47014"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-DYD8L47014');
+</script>
 <body>
 
 <header>
@@ -346,12 +355,12 @@ const oilDB = {
         }
     }
 
-    // 1. Listen for typing (Filter)
+
     searchInput.addEventListener('input', (e) => {
         renderDropdown(e.target.value);
     });
 
-    // 2. Listen for click/focus (Browse)
+
     searchInput.addEventListener('focus', () => {
         // Show current results (or full list if empty)
         renderDropdown(searchInput.value);
