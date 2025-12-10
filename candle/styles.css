@@ -74,6 +74,40 @@ header {
 .nav-link:hover { color: var(--primary); }
 .nav-link.active { color: var(--primary); font-weight: 600; }
 
+
+.global-unit-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-med);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+    margin-left: 20px; /* Space from nav links */
+}
+
+.global-unit-btn:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+    background: var(--primary-light);
+}
+
+/* Adjust mobile layout to fit the button */
+@media (max-width: 768px) {
+    header {
+        flex-wrap: wrap;
+    }
+    .global-unit-btn {
+        margin-left: auto; /* Push to right */
+        margin-right: 10px;
+    }
+}
+
 /* --- COMMON CARD STYLES --- */
 .card {
     background: var(--card-bg);
@@ -201,6 +235,40 @@ select:focus, input:focus {
 .row { display: flex; gap: 20px; }
 .row .form-group { flex: 1; }
 
+
+/* Unit Toggle Styling */
+.unit-toggle-container {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 15px;
+}
+
+.unit-toggle {
+    display: flex;
+    background: #f3f4f6;
+    border-radius: 8px;
+    padding: 4px;
+    border: 1px solid #e5e7eb;
+}
+
+.unit-btn {
+    padding: 6px 12px;
+    border: none;
+    background: transparent;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #6b7280;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.unit-btn.active {
+    background: #fff;
+    color: var(--primary, #000); /* Fallback to black if var missing */
+    box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
 /* Slider */
 .slider-container { margin-top: 25px; }
 .slider-header { display: flex; justify-content: space-between; margin-bottom: 12px; font-weight: 600; color: var(--text-dark); }
@@ -289,3 +357,118 @@ input[type=range]::-webkit-slider-runnable-track {
 .btn-tds:hover { border-color: var(--primary); color: var(--primary); background-color: var(--primary-light); }
 
 .footer { margin-top: 40px; text-align: center; font-size: 0.8rem; color: var(--text-light); padding-top: 20px; border-top: 1px solid var(--border); }
+
+
+/* --- FOOTER STYLES --- */
+.site-footer {
+    background-color: var(--card-bg);
+    border-top: 1px solid var(--border);
+    padding: 60px 0 30px 0;
+    margin-top: 60px; /* Separates footer from main content */
+}
+
+.footer-grid {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1fr; /* Brand column is wider */
+    gap: 40px;
+    margin-bottom: 40px;
+}
+
+.footer-col {
+    display: flex;
+    flex-direction: column;
+}
+
+.footer-desc {
+    font-size: 0.9rem;
+    color: var(--text-med);
+    line-height: 1.6;
+    margin: 0 0 20px 0;
+    max-width: 300px;
+}
+
+.footer-heading {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin: 0 0 20px 0;
+}
+
+.footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.footer-links li {
+    margin-bottom: 12px;
+}
+
+.footer-links a {
+    text-decoration: none;
+    color: var(--text-med);
+    font-size: 0.95rem;
+    transition: color 0.2s;
+}
+
+.footer-links a:hover {
+    color: var(--primary);
+}
+
+.social-links {
+    display: flex;
+    gap: 15px;
+}
+
+.social-links a {
+    color: var(--text-light);
+    font-size: 1.5rem;
+    transition: color 0.2s;
+}
+
+.social-links a:hover {
+    color: var(--primary);
+}
+
+.badge-mini {
+    background-color: #EFF6FF;
+    color: #1E40AF;
+    font-size: 0.65rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin-left: 6px;
+    font-weight: 600;
+    text-transform: uppercase;
+    vertical-align: middle;
+}
+
+.footer-bottom {
+    border-top: 1px solid var(--border);
+    padding-top: 30px;
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--text-light);
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    .footer-grid {
+        grid-template-columns: 1fr; /* Stack everything */
+        gap: 40px;
+        text-align: center;
+    }
+
+    .footer-desc {
+        margin: 0 auto 20px auto; /* Center text */
+    }
+
+    .brand {
+        justify-content: center;
+    }
+    
+    .social-links {
+        justify-content: center;
+    }
+}

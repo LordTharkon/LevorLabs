@@ -39,6 +39,11 @@
         <div class="brand-tag">BETA</div>
     </a>
 
+	<button class="global-unit-btn" onclick="toggleGlobalUnit()">
+    <i class="ph-bold ph-arrows-left-right"></i>
+    <span id="global-unit-label">OZ / IN</span>
+</button>
+
     <div class="mobile-toggle" onclick="toggleMenu()">
         <i class="ph ph-list"></i>
     </div>
@@ -75,10 +80,7 @@
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
         <h2 style="margin-bottom:0;"><i class="ph ph-flask"></i> Formulation</h2>
         
-        <div class="unit-toggle" style="background:#f3f4f6; padding:4px; border-radius:8px; display:flex; gap:4px;">
-            <button id="btnOz" onclick="setUnit('oz')" style="border:none; background:#fff; padding:4px 12px; border-radius:6px; font-weight:600; font-size:0.85rem; box-shadow:0 1px 2px rgba(0,0,0,0.1); cursor:pointer;">oz</button>
-            <button id="btnG" onclick="setUnit('g')" style="border:none; background:transparent; padding:4px 12px; border-radius:6px; font-weight:500; font-size:0.85rem; color:#6b7280; cursor:pointer;">g</button>
-        </div>
+        
     </div> <div class="form-group">
         <label for="waxSelector">Wax Type</label>
         <select id="waxSelector"></select>
@@ -160,11 +162,30 @@
 <script src="scripts.js"></script>
 
 <script>
+    // --- ELEMENT REFERENCES ---
+    // Inputs
+    const refs = {
+        waterWeight: document.getElementById('waterWeight'),
+        candleCount: document.getElementById('candleCount'),
+        foSlider: document.getElementById('foSlider'),
+        customSg: document.getElementById('customSg'),
+        waxSelector: document.getElementById('waxSelector')
+    };
 
+    // Outputs
+    const displays = {
+        fo: document.getElementById('foDisplay'),
+        total: document.getElementById('totalWeightDisplay'),
+        wax: document.getElementById('waxNeededDisplay'),
+        foNeed: document.getElementById('foNeededDisplay'),
+        sg: document.getElementById('currentSgDisplay'),
+        waxName: document.getElementById('currentWaxName'),
+        meltInfo: document.getElementById('meltPointInfo'),
+        cureInfo: document.getElementById('cureTimeInfo')
+    };
 
-
-    // --- STEP 1: THE WAX DATABASE ---
-const waxData = [
+    // --- WAX DATA ---
+    const waxData = [
         { id: "g464", name: "Golden Brands 464", category: "Soy", sg: 0.86, meltMsg: "Heat to 185°F (Add Fragrance). Pour at 135°F (+/- 5°).", cureMsg: "Cure for 2 weeks." },
         { id: "g444", name: "Golden Brands 444", category: "Soy", sg: 0.86, meltMsg: "Heat to 185°F (Add Fragrance). Pour at 125-135°F.", cureMsg: "Cure for 2 weeks." },
         { id: "g415", name: "Golden Brands 415", category: "Soy", sg: 0.86, meltMsg: "Pure soy. Heat to 185°F (Add Fragrance). Pour at 140°F.", cureMsg: "Cure for 2 weeks." },
@@ -172,138 +193,112 @@ const waxData = [
         { id: "g454", name: "Golden Brands 454", category: "Coco/Soy", sg: 0.86, meltMsg: "Heat to 185°F (Add Fragrance). Pour between 125-145°F.", cureMsg: "Cure for 1-2 weeks." },
         { id: "nw_c6", name: "NatureWax C-6", category: "Coco/Soy", sg: 0.88, meltMsg: "Heat to 180°F (Add Fragrance). Pour at 160°F.", cureMsg: "Cure for 1 week." },
         { id: "igi6006", name: "IGI 6006", category: "Para-Soy", sg: 0.88, meltMsg: "Heat to 185°F (Add Fragrance). Pour at 170°F.", cureMsg: "Cure for 3-5 days." },
-        { id: "igi4627", name: "IGI 4627 (Comfort)", category: "Paraffin", sg: 0.92, meltMsg: "Heat to 185°F (Add Fragrance). Pour at 175°F.", cureMsg: "Cure for 24-48 hours." },
-        { id: "igi4630", name: "IGI 4630 (Harmony)", category: "Paraffin", sg: 0.92, meltMsg: "Heat to 185°F (Add Fragrance). Pour at 175°F.", cureMsg: "Cure for 24-48 hours." },
+        { id: "igi4627", name: "IGI 4627", category: "Paraffin", sg: 0.92, meltMsg: "Heat to 185°F (Add Fragrance). Pour at 175°F.", cureMsg: "Cure for 24-48 hours." },
+        { id: "igi4630", name: "IGI 4630", category: "Paraffin", sg: 0.92, meltMsg: "Heat to 185°F (Add Fragrance). Pour at 175°F.", cureMsg: "Cure for 24-48 hours." },
         { id: "igi6046", name: "IGI 6046", category: "Para-Coco", sg: 0.90, meltMsg: "Heat to 190°F (Add Fragrance). Pour at 170°F.", cureMsg: "Cure for 3-5 days." },
         { id: "pb550", name: "ProBlend 550", category: "Paraffin", sg: 0.92, meltMsg: "Heat to 190°F (Add Fragrance). Pour at 170°F.", cureMsg: "Cure for 24 hours." },
         { id: "pb600", name: "ProBlend 600", category: "Para-Soy", sg: 0.88, meltMsg: "Heat to 185°F (Add Fragrance). Pour at 160°F.", cureMsg: "Cure for 3-5 days." },
-        { id: "bees", name: "Beeswax (Generic)", category: "Natural", sg: 0.96, meltMsg: "Heat to 160°F+. Add Fragrance. Pour Hot.", cureMsg: "Cure for 48 hours." },
-        { id: "custom", name: "Other / Custom", category: "Custom", sg: 0.86, meltMsg: "Check manufacturer instructions.", cureMsg: "Check manufacturer instructions." }
+        { id: "bees", name: "Beeswax", category: "Natural", sg: 0.96, meltMsg: "Heat to 160°F+. Add Fragrance. Pour Hot.", cureMsg: "Cure for 48 hours." },
+        { id: "custom", name: "Custom Wax", category: "User", sg: 0.86, meltMsg: "Check manufacturer instructions.", cureMsg: "Check manufacturer instructions." }
     ];
 
-    // DOM DOM DE DOM DOM
-	const waxSelector = document.getElementById('waxSelector');
-    const waterWeightInput = document.getElementById('waterWeight');
-    const candleCountInput = document.getElementById('candleCount');
-    const foSlider = document.getElementById('foSlider');
-    const foDisplay = document.getElementById('foDisplay');
-    const totalWeightDisplay = document.getElementById('totalWeightDisplay');
-    const waxNeededDisplay = document.getElementById('waxNeededDisplay');
-    const foNeededDisplay = document.getElementById('foNeededDisplay');
-    const currentSgDisplay = document.getElementById('currentSgDisplay');
-    const currentWaxName = document.getElementById('currentWaxName');
-    const meltPointInfo = document.getElementById('meltPointInfo');
-    const cureTimeInfo = document.getElementById('cureTimeInfo');
-    const customSgContainer = document.getElementById('customSgContainer');
-    const customSgInput = document.getElementById('customSg');
-
-// Unit Toggles
-    const btnOz = document.getElementById('btnOz');
-    const btnG = document.getElementById('btnG');
-    const unitLabels = document.querySelectorAll('.unit-label');
-    let currentUnit = 'oz'; // Default
-
-    // --- UNIT HANDLING ---
-    function setUnit(unit) {
-        if (unit === currentUnit) return;
-
-        // Visual Toggle State
-        if (unit === 'g') {
-            btnG.style.background = '#fff';
-            btnG.style.boxShadow = '0 1px 2px rgba(0,0,0,0.1)';
-            btnG.style.fontWeight = '600';
-            btnG.style.color = '#000';
-            
-            btnOz.style.background = 'transparent';
-            btnOz.style.boxShadow = 'none';
-            btnOz.style.fontWeight = '500';
-            btnOz.style.color = '#6b7280';
-            
-            // Convert Input Value: oz -> g
-            if (waterWeightInput.value) {
-                waterWeightInput.value = (parseFloat(waterWeightInput.value) * 28.3495).toFixed(1);
-            }
-        } else {
-            btnOz.style.background = '#fff';
-            btnOz.style.boxShadow = '0 1px 2px rgba(0,0,0,0.1)';
-            btnOz.style.fontWeight = '600';
-            btnOz.style.color = '#000';
-            
-            btnG.style.background = 'transparent';
-            btnG.style.boxShadow = 'none';
-            btnG.style.fontWeight = '500';
-            btnG.style.color = '#6b7280';
-
-            // Convert Input Value: g -> oz
-            if (waterWeightInput.value) {
-                waterWeightInput.value = (parseFloat(waterWeightInput.value) / 28.3495).toFixed(2);
-            }
+    // --- GLOBAL UNIT LISTENER ---
+    document.addEventListener('unitChange', function(e) {
+        if (e.detail.converting) {
+            convertInput('waterWeight', 'mass');
         }
-
-        currentUnit = unit;
-        
-        // Update all text labels
-        unitLabels.forEach(el => el.textContent = unit);
-        
         calculate();
-    }
+    });
 
-    // --- STEP 2: INITIALIZATION ---
+    // --- INITIALIZATION ---
     function populateWaxes() {
         waxData.forEach(wax => {
             const option = document.createElement('option');
             option.value = wax.id;
             option.textContent = `${wax.name} (${wax.category})`;
-            waxSelector.appendChild(option);
+            refs.waxSelector.appendChild(option);
         });
     }
 
-    // --- STEP 3: CALCULATION ENGINE ---
-    function calculate() {
-        const selectedId = waxSelector.value;
-        const waxInfo = waxData.find(w => w.id === selectedId) || waxData[0];
+    // --- HELPER: TEXT TEMPERATURE CONVERTER ---
+    function formatTempString(text) {
+        if (globalUnit === 'imperial') return text;
         
-        let sg = waxInfo.sg;
+        // Regex magic: Finds patterns like "185°F" or "125-135°F"
+        return text.replace(/(\d+)(?:-(\d+))?°F/g, (match, p1, p2) => {
+            const c1 = Math.round((parseInt(p1) - 32) * 5/9);
+            if (p2) {
+                const c2 = Math.round((parseInt(p2) - 32) * 5/9);
+                return `${c1}-${c2}°C`;
+            }
+            return `${c1}°C`;
+        });
+    }
+
+    // --- CORE LOGIC ---
+    function calculate() {
+        // 1. Get Inputs
+        const waterWeight = parseFloat(refs.waterWeight.value) || 0;
+        const count = parseFloat(refs.candleCount.value) || 0;
+        const fragranceLoad = parseFloat(refs.foSlider.value) || 0;
+        
+        // 2. Determine Specific Gravity
+        const selectedId = refs.waxSelector.value;
+        const selectedWax = waxData.find(w => w.id === selectedId) || waxData[0];
+        
+        let sg = selectedWax.sg;
+        
+        // Handle Custom Input Visibility
+        const customSgContainer = document.getElementById('customSgContainer');
         if (selectedId === 'custom') {
             customSgContainer.classList.remove('hidden');
-            sg = parseFloat(customSgInput.value) || 0.86;
+            sg = parseFloat(refs.customSg.value) || 0.86;
         } else {
             customSgContainer.classList.add('hidden');
         }
 
-        const waterWeight = parseFloat(waterWeightInput.value) || 0;
-        const count = parseFloat(candleCountInput.value) || 0;
-        const fragranceLoad = parseFloat(foSlider.value) || 0;
-
-        // Math is unit agnostic because SG is a ratio.
-        // If input is grams, output is grams. If input is oz, output is oz.
+        // 3. Main Math (Unit Agnostic)
         const totalBatchWeight = waterWeight * sg * count;
-        
         const waxWeight = totalBatchWeight / (1 + (fragranceLoad / 100));
         const foWeight = totalBatchWeight - waxWeight;
 
-        foDisplay.textContent = fragranceLoad + "%";
+        // 4. Update Result Text
+        const decimals = globalUnit === 'imperial' ? 2 : 1;
         
-        totalWeightDisplay.textContent = totalBatchWeight.toFixed(2);
-        waxNeededDisplay.textContent = waxWeight.toFixed(2);
-        foNeededDisplay.textContent = foWeight.toFixed(2);
+        displays.fo.textContent = fragranceLoad + "%";
+        displays.total.textContent = totalBatchWeight.toFixed(decimals);
+        displays.wax.textContent = waxWeight.toFixed(decimals);
+        displays.foNeed.textContent = foWeight.toFixed(decimals);
         
-        currentSgDisplay.textContent = sg;
-        currentWaxName.textContent = waxInfo.name;
-        meltPointInfo.textContent = waxInfo.meltMsg;
-        cureTimeInfo.textContent = waxInfo.cureMsg;
+        displays.sg.textContent = sg;
+        displays.waxName.textContent = selectedWax.name;
+
+        // 5. Update Info Cards (With Temp Conversion)
+        displays.meltInfo.textContent = formatTempString(selectedWax.meltMsg);
+        displays.cureInfo.textContent = selectedWax.cureMsg;
     }
 
-    waxSelector.addEventListener('change', calculate);
-    waterWeightInput.addEventListener('input', calculate);
-    candleCountInput.addEventListener('input', calculate);
-    foSlider.addEventListener('input', calculate);
-    customSgInput.addEventListener('input', calculate);
+    // --- EVENT LISTENERS ---
+    Object.values(refs).forEach(el => {
+        el.addEventListener('input', calculate);
+        el.addEventListener('change', calculate);
+    });
 
+    // --- STARTUP ---
     populateWaxes();
+    
+    // If loading in metric mode with pre-filled data, convert it
+    if(globalUnit === 'metric' && refs.waterWeight.value) {
+        convertInput('waterWeight', 'mass');
+    }
+    
     calculate();
 </script>
 
 </body>
+
+
+
+
 
 </html>

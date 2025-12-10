@@ -18,7 +18,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
     <link rel="stylesheet" href="styles.css">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <style>
         /* Wick Specific Styles */
         .beta-banner {
@@ -61,7 +61,7 @@
             cursor: pointer;
         }
 
-        /* New Styles for Multiple Personality Cards */
+        /* Styles for Multiple Personality Cards */
         .personality-container {
             width: 100%;
             margin-top: 20px;
@@ -72,10 +72,9 @@
             padding-top: 20px;
         }
         
-        /* Add spacing if there is a second card */
         .personality-card + .personality-card {
             margin-top: 20px;
-            border-top: 1px dashed var(--border); /* Dashed line to separate the two */
+            border-top: 1px dashed var(--border); 
         }
 
         .personality-title {
@@ -94,7 +93,6 @@
         }
     </style>
 </head>
-<!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-DYD8L47014"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -112,6 +110,11 @@
         <div class="brand-name">Levor<span style="font-weight:400; opacity: 0.7;">Labs</span></div>
         <div class="brand-tag">BETA</div>
     </a>
+    
+    <button class="global-unit-btn" onclick="toggleGlobalUnit()">
+        <i class="ph-bold ph-arrows-left-right"></i>
+        <span id="global-unit-label">OZ / IN</span>
+    </button>
 
     <div class="mobile-toggle" onclick="toggleMenu()">
         <i class="ph ph-list"></i>
@@ -122,7 +125,7 @@
             <i class="ph ph-flask"></i> Calculator
         </a>
         
-        <a href="wick.html" class="nav-link">
+        <a href="wick.html" class="nav-link active">
             <i class="ph ph-fire"></i> Wick Finder
         </a>
 
@@ -164,19 +167,18 @@
             </div>
 
             <div class="form-group">
-                <label>Inside Diameter (inches)</label>
+                <label>Inside Diameter (<span id="diameterUnitLabel">in</span>)</label>
                 <div style="display: flex; gap: 10px; align-items: center;">
                     <input type="number" id="diameterInput" value="3.0" step="0.1" min="1" max="6">
-                    <span style="font-weight: 600; color: var(--text-med);">in</span>
                 </div>
             </div>
 
             <div class="slider-container">
-                <input type="range" id="diaSlider" min="1" max="5" value="3.0" step="0.1">
+                <input type="range" id="diaSlider" min="1" max="6" value="3.0" step="0.1">
                 <div class="slider-labels">
-                    <span>Votive (1.5")</span>
-                    <span>Tumbler (3")</span>
-                    <span>Bowl (4"+)</span>
+                    <span id="sliderLabelSm">Votive (1.5")</span>
+                    <span id="sliderLabelMd">Tumbler (3")</span>
+                    <span id="sliderLabelLg">Bowl (4"+)</span>
                 </div>
             </div>
 
@@ -219,18 +221,27 @@
 <script src="scripts.js"></script>
 
 <script>
+    // --- ELEMENTS ---
     const diameterInput = document.getElementById('diameterInput');
     const diaSlider = document.getElementById('diaSlider');
     const waxSelector = document.getElementById('waxFamily');
     const checkHeavy = document.getElementById('checkHeavy');
     const checkDye = document.getElementById('checkDye');
     
+    // UI Elements
+    const diameterUnitLabel = document.getElementById('diameterUnitLabel');
     const recSeries = document.getElementById('recSeries');
     const recSize = document.getElementById('recSize');
-    const seriesSubtitle = document.getElementById('seriesSubtitle'); // NEW REF
+    const seriesSubtitle = document.getElementById('seriesSubtitle');
     const altOption = document.getElementById('altOption');
     const personalityContainer = document.getElementById('personalityContainer');
+    
+    // Slider Labels
+    const slSm = document.getElementById('sliderLabelSm');
+    const slMd = document.getElementById('sliderLabelMd');
+    const slLg = document.getElementById('sliderLabelLg');
 
+    // --- DATA ---
     const wickData = {
         CD:  [ "4", "6", "8", "10", "12", "14", "16", "18", "20", "22", "24", "26"],
         ECO: [ "1", "2", "4", "6", "8", "10", "12", "14", "16" ],
@@ -246,51 +257,102 @@
         "LX": "Rigid flat braided cotton. Tighter flame, very consistent. Great for Paraffin and Para-Soy blends.",
         "Zinc": "Wire cored. Very rigid, keeps standing in melted wax. Burns cooler, ideal for gel or easy-melting paraffin.",
         "HTP": "High Tenacity Paper. A flat braid that curls to self-trim. Good all-rounder for difficult waxes.",
-        "Double Wick": "Requires two wicks spaced evenly. Place them halfway between the center and the jar wall."
+        "Double Wick": "<b>Placement Guide:</b> Space wicks evenly apart. They should be halfway between the center and the jar wall (effectively creating two smaller melt pools)."
     };
 
+    // --- GLOBAL UNIT LISTENER ---
+    document.addEventListener('unitChange', function(e) {
+        if (e.detail.converting) {
+            let val = parseFloat(diameterInput.value);
+            
+            if (globalUnit === 'metric') {
+                // Imperial -> Metric
+                val = val * 2.54;
+                diaSlider.min = "2.5"; diaSlider.max = "15"; diaSlider.step = "0.1";
+                diameterUnitLabel.textContent = "cm";
+                slSm.textContent = "Votive (3.8cm)"; slMd.textContent = "Tumbler (7.6cm)"; slLg.textContent = "Bowl (10cm+)";
+            } else {
+                // Metric -> Imperial
+                val = val / 2.54;
+                diaSlider.min = "1"; diaSlider.max = "6"; diaSlider.step = "0.1";
+                diameterUnitLabel.textContent = "in";
+                slSm.textContent = "Votive (1.5\")"; slMd.textContent = "Tumbler (3\")"; slLg.textContent = "Bowl (4\"+)";
+            }
+            diameterInput.value = val.toFixed(1);
+            diaSlider.value = val.toFixed(1);
+        } else {
+            // UI Text Update Only
+            const isImp = globalUnit === 'imperial';
+            diameterUnitLabel.textContent = isImp ? "in" : "cm";
+            if(!isImp) {
+                 diaSlider.min = "2.5"; diaSlider.max = "15";
+                 slSm.textContent = "Votive (3.8cm)"; slMd.textContent = "Tumbler (7.6cm)"; slLg.textContent = "Bowl (10cm+)";
+            } else {
+                 diaSlider.min = "1"; diaSlider.max = "6";
+                 slSm.textContent = "Votive (1.5\")"; slMd.textContent = "Tumbler (3\")"; slLg.textContent = "Bowl (4\"+)";
+            }
+        }
+        calculateWick();
+    });
+
+    // --- INPUT LISTENERS ---
     diaSlider.addEventListener('input', (e) => { diameterInput.value = e.target.value; calculateWick(); });
     diameterInput.addEventListener('input', (e) => { diaSlider.value = e.target.value; calculateWick(); });
     waxSelector.addEventListener('change', calculateWick);
     checkHeavy.addEventListener('change', calculateWick);
     checkDye.addEventListener('change', calculateWick);
 
+    // --- HELPERS ---
     function getAdjustedIndex(baseIndex, maxIndex) {
         let bump = 0;
         if (checkHeavy.checked) bump += 1;
         if (checkDye.checked) bump += 1;
-        let newIndex = baseIndex + bump;
-        if (newIndex > maxIndex) return maxIndex;
-        return newIndex;
+        return Math.min(baseIndex + bump, maxIndex);
     }
 
     function renderDescription(title, text) {
         return `
             <div class="personality-card">
-                <div class="personality-title">ABOUT ${title} SERIES</div>
+                <div class="personality-title">${title}</div>
                 <div class="personality-text">${text}</div>
-            </div>
-        `;
+            </div>`;
     }
 
+    // --- MAIN CALCULATION ---
     function calculateWick() {
-        const dia = parseFloat(diameterInput.value);
-        const wax = waxSelector.value;
+        let dia = parseFloat(diameterInput.value);
         
+        // 1. NORMALIZE TO INCHES FOR LOGIC
+        if (globalUnit === 'metric') {
+            dia = dia / 2.54;
+        }
+
+        const wax = waxSelector.value;
         let sIdx = 0; 
         let pSeries = "CD"; 
         let secSeries = "ECO"; 
         let secIdx = 0;
+        let isDouble = false;
 
-        // --- LOGIC BLOCKS ---
+        // 2. DETECT DOUBLE WICKING THRESHOLD
+        // Beeswax needs double wicks earlier (3.5") than others (4.0")
+        const doubleThreshold = (wax === 'bees') ? 3.5 : 4.0;
+        
+        if (dia >= doubleThreshold) {
+            isDouble = true;
+            // The "Half-Diameter Strategy":
+            // Treat a 4" jar as two 2" jars side-by-side.
+            dia = dia / 2; 
+        }
+
+        // 3. LOGIC TREE (Using the potentially halved 'dia')
         if (wax === 'soy') {
             pSeries = "CD"; secSeries = "ECO";
             if (dia < 2.0) { sIdx = 0; secIdx = 1; }
             else if (dia < 2.5) { sIdx = 2; secIdx = 2; }
             else if (dia < 3.0) { sIdx = 4; secIdx = 5; }
             else if (dia < 3.5) { sIdx = 7; secIdx = 7; }
-            else if (dia < 4.0) { sIdx = 9; secIdx = 8; }
-            else { pSeries = "Double Wick"; }
+            else { sIdx = 9; secIdx = 8; } // Fallback to largest single wick
         }
         else if (wax === 'blend') {
             pSeries = "CD"; secSeries = "LX";
@@ -298,8 +360,7 @@
             else if (dia < 2.5) { sIdx = 1; secIdx = 3; }
             else if (dia < 3.0) { sIdx = 3; secIdx = 5; }
             else if (dia < 3.5) { sIdx = 4; secIdx = 7; }
-            else if (dia < 4.0) { sIdx = 8; secIdx = 9; }
-            else { pSeries = "Double Wick"; }
+            else { sIdx = 8; secIdx = 9; }
         }
         else if (wax === 'paraffin') {
             pSeries = "LX"; secSeries = "Zinc";
@@ -307,8 +368,7 @@
             else if (dia < 2.5) { sIdx = 2; secIdx = 1; }
             else if (dia < 3.0) { sIdx = 4; secIdx = 2; }
             else if (dia < 3.5) { sIdx = 6; secIdx = 3; }
-            else if (dia < 4.0) { sIdx = 8; secIdx = 4; }
-            else { pSeries = "Double Wick"; }
+            else { sIdx = 8; secIdx = 4; }
         }
         else if (wax === 'para_soy') {
             pSeries = "CD"; secSeries = "HTP";
@@ -316,64 +376,59 @@
             else if (dia < 2.5) { sIdx = 2; secIdx = 2; }
             else if (dia < 3.0) { sIdx = 3; secIdx = 3; }
             else if (dia < 3.5) { sIdx = 4; secIdx = 5; }
-            else if (dia < 4.0) { sIdx = 7; secIdx = 6; }
-            else { pSeries = "Double Wick"; }
+            else { sIdx = 7; secIdx = 6; }
         }
         else if (wax === 'bees') {
              pSeries = "ECO"; secSeries = "CD";
              if (dia < 2.0) { sIdx = 2; secIdx = 2; }
              else if (dia < 2.5) { sIdx = 4; secIdx = 4; }
              else if (dia < 3.0) { sIdx = 6; secIdx = 6; }
-             else if (dia < 3.5) { sIdx = 8; secIdx = 8; }
-             else { pSeries = "Double Wick"; }
+             else { sIdx = 8; secIdx = 8; }
         }
 
-        // --- RENDER UI ---
+        // 4. CALCULATE FINAL INDICES (Fragrance/Dye bump)
+        const finalPIdx = getAdjustedIndex(sIdx, wickData[pSeries].length - 1);
+        const finalSIdx = getAdjustedIndex(secIdx, wickData[secSeries].length - 1);
+        
+        // 5. RENDER RESULTS
         let htmlContent = '';
-
-        if (pSeries === "Double Wick") {
-            recSeries.textContent = "Double Wick";
-            recSize.textContent = "Required";
-            seriesSubtitle.textContent = ""; // Clear subtitle
-            altOption.innerHTML = "Try two wicks 50% smaller than single.";
+        
+        if (isDouble) {
+            // DOUBLE WICK DISPLAY
+            recSeries.textContent = "2x " + pSeries;
+            recSize.textContent = wickData[pSeries][finalPIdx];
+            seriesSubtitle.textContent = (pSeries === 'CD') ? "(Stabilo Series)" : "";
             
-            htmlContent += renderDescription("DOUBLE WICKING", personalities["Double Wick"]);
+            // Alt Option
+            let displayAlt = secSeries;
+            if (secSeries === 'CD') displayAlt = 'CD (Stabilo)';
+            altOption.innerHTML = `or <span style="font-weight:600;">2x ${displayAlt} ${wickData[secSeries][finalSIdx]}</span>`;
 
+            // Add Double Wick Guide Card
+            htmlContent += renderDescription("DOUBLE WICK SETUP", personalities["Double Wick"]);
+            
         } else {
-            // Logic
-            const finalPIdx = getAdjustedIndex(sIdx, wickData[pSeries].length - 1);
-            const finalSIdx = getAdjustedIndex(secIdx, wickData[secSeries].length - 1);
-            const altName = secSeries;
-            const altSize = wickData[secSeries][finalSIdx];
-
-            // --- FIXED: Subtitle approach for CD/Stabilo ---
+            // SINGLE WICK DISPLAY
             recSeries.textContent = pSeries;
             recSize.textContent = wickData[pSeries][finalPIdx];
-
-            if (pSeries === 'CD') {
-                seriesSubtitle.textContent = "(Stabilo Series)";
-            } else {
-                seriesSubtitle.textContent = "";
-            }
+            seriesSubtitle.textContent = (pSeries === 'CD') ? "(Stabilo Series)" : "";
             
-            // Handle Alternative text
-            let displayAltName = altName;
-            if (altName === 'CD') displayAltName = 'CD (Stabilo)';
-            
-            altOption.innerHTML = `or <span style="font-weight:600;">${displayAltName} ${altSize}</span>`;
-            
-            // Render Descriptions
-            const pTitle = (pSeries === 'CD') ? 'CD (STABILO)' : pSeries;
-            const sTitle = (secSeries === 'CD') ? 'CD (STABILO)' : secSeries;
-
-            htmlContent += renderDescription(pTitle, personalities[pSeries]);
-            htmlContent += renderDescription(sTitle, personalities[secSeries]);
+            let displayAlt = secSeries;
+            if (secSeries === 'CD') displayAlt = 'CD (Stabilo)';
+            altOption.innerHTML = `or <span style="font-weight:600;">${displayAlt} ${wickData[secSeries][finalSIdx]}</span>`;
         }
 
-        // Inject into DOM
+        // Add Personality Cards for the selected series
+        const pTitle = (pSeries === 'CD') ? 'CD (STABILO)' : pSeries;
+        const sTitle = (secSeries === 'CD') ? 'CD (STABILO)' : secSeries;
+        
+        htmlContent += renderDescription("ABOUT " + pTitle + " SERIES", personalities[pSeries]);
+        htmlContent += renderDescription("ABOUT " + sTitle + " SERIES", personalities[secSeries]);
+
         personalityContainer.innerHTML = htmlContent;
     }
 
+    // Init
     calculateWick();
 </script>
 

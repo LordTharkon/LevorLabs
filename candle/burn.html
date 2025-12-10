@@ -88,7 +88,10 @@
         <div class="brand-name">Levor<span style="font-weight:400; opacity: 0.7;">Labs</span></div>
         <div class="brand-tag">BETA</div>
     </a>
-
+<button class="global-unit-btn" onclick="toggleGlobalUnit()">
+    <i class="ph-bold ph-arrows-left-right"></i>
+    <span id="global-unit-label">OZ / IN</span>
+</button>
     <div class="mobile-toggle" onclick="toggleMenu()">
         <i class="ph ph-list"></i>
     </div>
@@ -129,11 +132,7 @@
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
                 <h2 style="margin-bottom:0;"><i class="ph ph-scales"></i> Test Data</h2>
                 
-                <div class="unit-toggle" style="background:#f3f4f6; padding:4px; border-radius:8px; display:flex; gap:4px;">
-                    <button id="btnOz" onclick="setUnit('oz')" style="border:none; background:#fff; padding:4px 12px; border-radius:6px; font-weight:600; font-size:0.85rem; box-shadow:0 1px 2px rgba(0,0,0,0.1); cursor:pointer;">oz</button>
-                    <button id="btnG" onclick="setUnit('g')" style="border:none; background:transparent; padding:4px 12px; border-radius:6px; font-weight:500; font-size:0.85rem; color:#6b7280; cursor:pointer;">g</button>
                 </div>
-            </div>
 
             <p style="font-size: 0.85rem; color: var(--text-med); margin-bottom: 20px;">
                 Weigh your candle before and after a timed burn (usually 4 hours) to calculate efficiency.
@@ -212,67 +211,66 @@
     const totalLifeDisplay = document.getElementById('totalLifeDisplay');
     const analysisText = document.getElementById('analysisText');
     const targetRange = document.getElementById('targetRange');
+
     
-    // --- UNIT TOGGLE SETUP ---
-    const btnOz = document.getElementById('btnOz');
-    const btnG = document.getElementById('btnG');
-    const unitLabels = document.querySelectorAll('.unit-label');
-    let currentUnit = 'oz'; 
-
-    // --- FUNCTION: SWITCH UNITS ---
-    function setUnit(unit) {
-        if (unit === currentUnit) return;
-        
-        const inputsToConvert = [weightStart, weightEnd, netWeight];
-
-        if (unit === 'g') {
-            // Visual Styles for Grams
-            btnG.style.background = '#fff'; 
-            btnG.style.boxShadow = '0 1px 2px rgba(0,0,0,0.1)'; 
-            btnG.style.fontWeight = '600'; 
-            btnG.style.color = '#000';
-            
-            btnOz.style.background = 'transparent'; 
-            btnOz.style.boxShadow = 'none'; 
-            btnOz.style.fontWeight = '500'; 
-            btnOz.style.color = '#6b7280';
-            
-            // Convert existing numbers: oz -> g
-            inputsToConvert.forEach(input => {
-                if(input.value) input.value = (parseFloat(input.value) * 28.3495).toFixed(1);
-            });
-            
-            // Update the "Target Range" text
-            targetRange.textContent = "4.25 - 7.0"; 
-
-        } else {
-            // Visual Styles for Oz
-            btnOz.style.background = '#fff'; 
-            btnOz.style.boxShadow = '0 1px 2px rgba(0,0,0,0.1)'; 
-            btnOz.style.fontWeight = '600'; 
-            btnOz.style.color = '#000';
-            
-            btnG.style.background = 'transparent'; 
-            btnG.style.boxShadow = 'none'; 
-            btnG.style.fontWeight = '500'; 
-            btnG.style.color = '#6b7280';
-
-            // Convert existing numbers: g -> oz
-            inputsToConvert.forEach(input => {
-                if(input.value) input.value = (parseFloat(input.value) / 28.3495).toFixed(2);
-            });
-
-            // Update the "Target Range" text
-            targetRange.textContent = "0.15 - 0.25";
+document.addEventListener('unitChange', function(e) {
+        if (e.detail.converting) {
+            convertInput('weightStart', 'mass');
+            convertInput('weightEnd', 'mass');
+            convertInput('netWeight', 'mass');
         }
-
-        currentUnit = unit;
-        
-        // Update all text labels (oz/g) on the page
-        unitLabels.forEach(el => el.textContent = unit);
-        
+        updateRangeText();
         calculate();
+    });
+
+    function updateRangeText() {
+        const target = document.getElementById('targetRange');
+        if(globalUnit === 'imperial') {
+            target.textContent = "0.15 - 0.25";
+        } else {
+            target.textContent = "4.25 - 7.0";
+        }
     }
+
+    function calculate() {
+        const start = parseFloat(document.getElementById('weightStart').value) || 0;
+        const end = parseFloat(document.getElementById('weightEnd').value) || 0;
+        const hours = parseFloat(document.getElementById('duration').value) || 0;
+        const totalWax = parseFloat(document.getElementById('netWeight').value) || 0;
+
+        if (start > 0 && end > 0 && hours > 0) {
+            const consumed = start - end;
+            const rate = consumed / hours;
+            
+            // Display Logic
+            const decimals = globalUnit === 'imperial' ? 3 : 1;
+            document.getElementById('rateDisplay').textContent = rate.toFixed(decimals);
+            
+            if (totalWax > 0) {
+                document.getElementById('totalLifeDisplay').textContent = (totalWax / rate).toFixed(1);
+            }
+
+            // Analysis (Convert to Oz for logic comparison)
+            const rateInOz = globalUnit === 'metric' ? (rate / 28.3495) : rate;
+            let msg = "<b>Optimal Range.</b>";
+            if (rateInOz < 0.1) msg = "<b>Burn is very slow.</b> Use a larger wick.";
+            if (rateInOz > 0.3) msg = "<b>Burn is very hot.</b> Try a smaller wick.";
+            document.getElementById('analysisText').innerHTML = msg;
+        }
+    }
+
+    // Attach listeners
+    ['weightStart', 'weightEnd', 'duration', 'netWeight'].forEach(id => {
+        document.getElementById(id).addEventListener('input', calculate);
+    });
+
+    // Init
+    if(globalUnit === 'metric') {
+        // Convert any default values if they exist
+        convertInput('weightStart', 'mass'); 
+        // ... etc
+    }
+    updateRangeText();
 
     // --- FUNCTION: ADJUST TIME BUTTONS ---
     function adjustTime(delta) {
@@ -340,6 +338,9 @@
     weightEnd.addEventListener('input', calculate);
     duration.addEventListener('input', calculate);
     netWeight.addEventListener('input', calculate);
+	
+	
+	
 </script>
 
 </body>
