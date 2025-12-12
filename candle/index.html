@@ -11,7 +11,7 @@
     <meta property="og:title" content="LevorLabs - Candle Batch Calculator">
     <meta property="og:description" content="Stop guessing. Calculate exact wax and fragrance weights for any container size.">
     <meta property="og:image" content="https://levorlabs.com/social-preview.jpg">
-    <meta property="og:url" content="./index.html">
+    <meta property="og:url" content="https://levorlabs.com/candle/index.html">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -186,18 +186,18 @@
 
     // --- WAX DATA ---
     const waxData = [
-        { id: "g464", name: "Golden Brands 464", category: "Soy", sg: 0.86, meltMsg: "Heat to 185°F (Add Fragrance). Pour at 135°F (+/- 5°).", cureMsg: "Cure for 2 weeks." },
-        { id: "g444", name: "Golden Brands 444", category: "Soy", sg: 0.86, meltMsg: "Heat to 185°F (Add Fragrance). Pour at 125-135°F.", cureMsg: "Cure for 2 weeks." },
-        { id: "g415", name: "Golden Brands 415", category: "Soy", sg: 0.86, meltMsg: "Pure soy. Heat to 185°F (Add Fragrance). Pour at 140°F.", cureMsg: "Cure for 2 weeks." },
-        { id: "g402", name: "Golden Brands 402", category: "Soy", sg: 0.86, meltMsg: "Heat to 185°F (Add Fragrance). Pour around 135°F.", cureMsg: "Cure for 2 weeks." },
-        { id: "g454", name: "Golden Brands 454", category: "Coco/Soy", sg: 0.86, meltMsg: "Heat to 185°F (Add Fragrance). Pour between 125-145°F.", cureMsg: "Cure for 1-2 weeks." },
-        { id: "nw_c6", name: "NatureWax C-6", category: "Coco/Soy", sg: 0.88, meltMsg: "Heat to 180°F (Add Fragrance). Pour at 160°F.", cureMsg: "Cure for 1 week." },
-        { id: "igi6006", name: "IGI 6006", category: "Para-Soy", sg: 0.88, meltMsg: "Heat to 185°F (Add Fragrance). Pour at 170°F.", cureMsg: "Cure for 3-5 days." },
-        { id: "igi4627", name: "IGI 4627", category: "Paraffin", sg: 0.92, meltMsg: "Heat to 185°F (Add Fragrance). Pour at 175°F.", cureMsg: "Cure for 24-48 hours." },
-        { id: "igi4630", name: "IGI 4630", category: "Paraffin", sg: 0.92, meltMsg: "Heat to 185°F (Add Fragrance). Pour at 175°F.", cureMsg: "Cure for 24-48 hours." },
-        { id: "igi6046", name: "IGI 6046", category: "Para-Coco", sg: 0.90, meltMsg: "Heat to 190°F (Add Fragrance). Pour at 170°F.", cureMsg: "Cure for 3-5 days." },
-        { id: "pb550", name: "ProBlend 550", category: "Paraffin", sg: 0.92, meltMsg: "Heat to 190°F (Add Fragrance). Pour at 170°F.", cureMsg: "Cure for 24 hours." },
-        { id: "pb600", name: "ProBlend 600", category: "Para-Soy", sg: 0.88, meltMsg: "Heat to 185°F (Add Fragrance). Pour at 160°F.", cureMsg: "Cure for 3-5 days." },
+        { id: "g464", name: "Golden Brands 464", category: "Soy", sg: 0.86, meltMsg: "Heat to 185°F, Add Fragrance. Pour at 135°F (+/- 5°).", cureMsg: "Cure for 2 weeks." },
+        { id: "g444", name: "Golden Brands 444", category: "Soy", sg: 0.86, meltMsg: "Heat to 185°F, Add Fragrance. Pour at 125-135°F.", cureMsg: "Cure for 2 weeks." },
+        { id: "g415", name: "Golden Brands 415", category: "Soy", sg: 0.86, meltMsg: "Pure soy. Heat to 185°F, Add Fragrance. Pour at 140°F.", cureMsg: "Cure for 2 weeks." },
+        { id: "g402", name: "Golden Brands 402", category: "Soy", sg: 0.86, meltMsg: "Heat to 185°F, Add Fragrance. Pour around 135°F.", cureMsg: "Cure for 2 weeks." },
+        { id: "g454", name: "Golden Brands 454", category: "Coco/Soy", sg: 0.86, meltMsg: "Heat to 185°F, Add Fragrance.. Pour between 125-145°F.", cureMsg: "Cure for 1-2 weeks." },
+        { id: "nw_c6", name: "NatureWax C-6", category: "Coco/Soy", sg: 0.88, meltMsg: "Heat to 180°F, Add Fragrance.. Pour at 160°F.", cureMsg: "Cure for 1 week." },
+        { id: "igi6006", name: "IGI 6006", category: "Para-Soy", sg: 0.88, meltMsg: "Heat to 185°F, Add Fragrance. Pour at 170°F.", cureMsg: "Cure for 3-5 days." },
+        { id: "igi4627", name: "IGI 4627", category: "Paraffin", sg: 0.92, meltMsg: "Heat to 185°F, Add Fragrance. Pour at 175°F.", cureMsg: "Cure for 24-48 hours." },
+        { id: "igi4630", name: "IGI 4630", category: "Paraffin", sg: 0.92, meltMsg: "Heat to 185°F, Add Fragrance. Pour at 175°F.", cureMsg: "Cure for 24-48 hours." },
+        { id: "igi6046", name: "IGI 6046", category: "Para-Coco", sg: 0.90, meltMsg: "Heat to 190°F, Add Fragrance. Pour at 170°F.", cureMsg: "Cure for 3-5 days." },
+        { id: "pb550", name: "ProBlend 550", category: "Paraffin", sg: 0.92, meltMsg: "Heat to 190°F, Add Fragrance. Pour at 170°F.", cureMsg: "Cure for 24 hours." },
+        { id: "pb600", name: "ProBlend 600", category: "Para-Soy", sg: 0.88, meltMsg: "Heat to 185°F, Add Fragrance. Pour at 160°F.", cureMsg: "Cure for 3-5 days." },
         { id: "bees", name: "Beeswax", category: "Natural", sg: 0.96, meltMsg: "Heat to 160°F+. Add Fragrance. Pour Hot.", cureMsg: "Cure for 48 hours." },
         { id: "custom", name: "Custom Wax", category: "User", sg: 0.86, meltMsg: "Check manufacturer instructions.", cureMsg: "Check manufacturer instructions." }
     ];
@@ -222,16 +222,18 @@
 
     // --- HELPER: TEXT TEMPERATURE CONVERTER ---
     function formatTempString(text) {
-        if (globalUnit === 'imperial') return text;
-        
-        // Regex magic: Finds patterns like "185°F" or "125-135°F"
+        // Regex to find "185°F" or "125-135°F"
         return text.replace(/(\d+)(?:-(\d+))?°F/g, (match, p1, p2) => {
             const c1 = Math.round((parseInt(p1) - 32) * 5/9);
+            
+            // If there is a range (e.g., 125-135)
             if (p2) {
                 const c2 = Math.round((parseInt(p2) - 32) * 5/9);
-                return `${c1}-${c2}°C`;
+                return `${match} (${c1}-${c2}°C)`;
             }
-            return `${c1}°C`;
+            
+            // If it's a single temp
+            return `${match} (${c1}°C)`;
         });
     }
 
