@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>Candle Warning Label Generator | LevorLabs</title>
+    <meta name="description" content="Free candle warning label generator. Create compliant safety labels for your candles instantly.">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cinzel:wght@700&family=Dancing+Script:wght@700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+
+<meta property="og:title" content="Candle Warning Label Generator | LevorLabs">
+<meta property="og:description" content="Free candle warning label generator. Create compliant safety labels for your candles instantly.">
+<meta property="og:image" content="https://levorlabs.com/social-preview.jpg">
+<meta property="og:url" content="https://levorlabs.com/candle/label.html">
+
+    <style>
+
+    </style>
+</head>
+
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-DYD8L47014"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-DYD8L47014');
+</script>
+
+<body>
+
+<div class="container">
+    <header>
+        <a href="./index.html" class="brand">
+            <i class="ph-fill ph-flame"></i>
+            <div class="brand-name">Levor<span style="font-weight:400; opacity: 0.7;">Labs</span></div>
+            <div class="brand-tag">BETA</div>
+        </a>
+
+        <div class="mobile-toggle" onclick="toggleMenu()">
+            <i class="ph ph-list"></i>
+        </div>
+
+        <nav class="nav-menu">
+            <a href="index.html" class="nav-link"><i class="ph ph-flask"></i> Calculator</a>
+            <a href="wick.html" class="nav-link"><i class="ph ph-fire"></i> Wick Finder</a>
+            <a href="burn.html" class="nav-link"><i class="ph ph-timer"></i> Burn Rate</a>
+            <a href="guide.html" class="nav-link"><i class="ph ph-book-open"></i> Wax Guide</a>
+            <a href="label.html" class="nav-link active" style="color:var(--primary); font-weight:600;"><i class="ph ph-tag"></i> Labels</a>
+        </nav>
+    </header>
+
+    <div class="page-header">
+        <h1>Wick & Warning</h1>
+        <p>Generate simple, compliant safety labels for your candles.</p>
+    </div>
+
+    <div class="main-grid">
+        
+        <div class="card">
+            <h2><i class="ph ph-sliders"></i> Configuration</h2>
+
+            <label>Shape</label>
+            <div class="template-grid">
+                <div class="template-option active" onclick="setShape('rect', event)">Rectangle</div>
+                <div class="template-option" onclick="setShape('square', event)">Square</div>
+                <div class="template-option" onclick="setShape('round', event)">Round</div>
+            </div>
+
+            <label>Warning Icon</label>
+            <div class="icon-grid">
+                <div class="icon-option active" onclick="setIcon('ph-fill ph-warning-octagon', event)" title="Standard Octagon">
+                    <i class="ph-fill ph-warning-octagon"></i>
+                </div>
+                <div class="icon-option" onclick="setIcon('ph-fill ph-warning', event)" title="ISO Triangle">
+                    <i class="ph-fill ph-warning"></i>
+                </div>
+                <div class="icon-option" onclick="setIcon('ph-fill ph-fire', event)" title="Flammable">
+                    <i class="ph-fill ph-fire"></i>
+                </div>
+                <div class="icon-option" onclick="setIcon('none', event)" title="No Icon">
+                    <span style="font-size:0.6rem; font-weight:700;">NONE</span>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="form-group" style="flex: 2;">
+                    <label>Font Style</label>
+                    <select id="inputFont">
+                        <option value="'Inter', sans-serif">Modern (Sans)</option>
+                        <option value="'Playfair Display', serif">Classic (Serif)</option>
+                        <option value="'Cinzel', serif">Luxury (Caps)</option>
+                        <option value="'Dancing Script', cursive">Handwritten</option>
+                        <option value="'Courier New', monospace">Minimalist (Mono)</option>
+                    </select>
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label>Ink Color</label>
+                    <div style="display:flex; height: 46px; border:1px solid var(--border); border-radius:8px; overflow:hidden;">
+                        <input type="color" id="inputColor" value="#000000" style="width:100%; height:100%; border:none; padding:0; cursor:pointer;">
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Company Name</label>
+                <input type="text" id="inputBrand" placeholder="LevorLabs" value="LevorCandles">
+            </div>
+
+            <div class="form-group">
+                <label>Scent / Subtitle</label>
+                <input type="text" id="inputScent" placeholder="Hand Poured Soy Wax">
+            </div>
+
+            <div class="form-group">
+                <label>Warning Text (Editable)</label>
+                <textarea id="inputWarning" rows="6" style="font-size:0.8rem; line-height:1.4;">Burn within sight. Keep away from flammable objects. Keep away from children and pets. Trim wick to 1/4" before lighting. Keep candle free of any foreign materials including matches and wick trimmings. Only burn the candle on a level, fire resistant surface. Do not burn candle for more than 4 hours at a time.</textarea>
+            </div>
+            
+            <div class="row">
+                <div class="form-group">
+                    <label>Weight</label>
+                    <input type="text" id="inputWeight" placeholder="8 oz (226g)" value="8 oz (226g)">
+                </div>
+                <div class="form-group">
+                    <label>Website / Contact</label>
+                    <input type="text" id="inputWeb" placeholder="www.yoursite.com" value="www.LevorLabs.com">
+                </div>
+            </div>
+
+            <div class="checkbox-group" style="background: #FAFAFA; padding: 15px; border-radius: 8px; border: 1px solid var(--border); margin-top:10px;">
+                <label style="display:flex; gap:10px; align-items:center; cursor:pointer;">
+                    <input type="checkbox" id="checkBorder" checked> Show Border
+                </label>
+            </div>
+
+            <div style="margin-top: 25px; display:flex; gap:10px;">
+                <button class="btn-tds" style="background: var(--primary); color: white; border:none; font-weight:600; cursor:pointer;" onclick="downloadLabel()">
+                    <i class="ph-bold ph-download-simple"></i> Save Image
+                </button>
+                <button class="btn-tds" style="cursor:pointer;" onclick="window.print()">
+                    <i class="ph-bold ph-printer"></i> Print
+                </button>
+            </div>
+        </div>
+
+        <div class="card" style="display:flex; flex-direction:column;">
+            <h2><i class="ph ph-eye"></i> Live Preview</h2>
+            
+            <div class="preview-area" id="capture-area">
+                <div id="label-render">
+                    <div class="lbl-brand" id="dispBrand">LevorCandles</div>
+                    <div class="lbl-scent" id="dispScent">Hand Poured Soy Wax</div>
+                    <div class="lbl-scent" id="dispWeight" style="font-size: 0.7rem; font-weight: 600;">8 oz (226g)</div>
+                    
+                    <div class="lbl-divider"></div>
+                    
+                    <div class="lbl-warning-title">
+                        <i class="ph-fill ph-warning-octagon" id="warnIcon" style="color: inherit; font-size: 1rem;"></i> 
+                        WARNING
+                    </div>
+                    
+                    <div class="lbl-warning-text" id="dispWarning"></div>
+
+                    <div class="lbl-divider"></div>
+
+                    <div class="lbl-website" id="dispWeb">www.LevorLabs.com</div>
+                </div>
+            </div>
+            
+            <p style="font-size:0.8rem; color:var(--text-light); text-align:center; margin-top:15px;">
+                Tip: For best print results, download the image and use a label printer utility.
+            </p>
+        </div>
+    </div>
+    
+    <div style="margin-top: 40px; text-align: center; font-size: 0.8rem; color: var(--text-light); border-top: 1px solid var(--border); padding-top: 20px;">
+        &copy; 2025 Levor Labs.
+    </div>
+
+</div>
+
+<script src="scripts.js"></script>
+
+<script>
+    // --- STATE MANAGEMENT VARS ---
+    // We track these strictly for saving/loading purposes
+    let activeShape = 'rect'; 
+    let activeIcon = 'ph-fill ph-warning-octagon';
+
+    // --- ELEMENT REFERENCES ---
+    const inputs = {
+        font: document.getElementById('inputFont'),
+        color: document.getElementById('inputColor'),
+        brand: document.getElementById('inputBrand'),
+        scent: document.getElementById('inputScent'),
+        warning: document.getElementById('inputWarning'),
+        web: document.getElementById('inputWeb'),
+        weight: document.getElementById('inputWeight'),
+        border: document.getElementById('checkBorder')
+    };
+
+    const display = {
+        label: document.getElementById('label-render'),
+        brand: document.getElementById('dispBrand'),
+        scent: document.getElementById('dispScent'),
+        warning: document.getElementById('dispWarning'),
+        web: document.getElementById('dispWeb'),
+        weight: document.getElementById('dispWeight'),
+        icon: document.getElementById('warnIcon')
+    };
+
+    // --- MAIN UPDATE FUNCTION ---
+    function updatePreview() {
+        // 1. Map Inputs to Display
+        display.brand.textContent = inputs.brand.value;
+        display.scent.textContent = inputs.scent.value;
+        display.web.textContent = inputs.web.value;
+        display.weight.textContent = inputs.weight.value;
+        display.warning.textContent = inputs.warning.value;
+        
+        // 2. Apply Styles
+        display.label.style.fontFamily = inputs.font.value;
+        display.label.style.color = inputs.color.value;
+        
+        // 3. Border Logic
+        if (inputs.border.checked) {
+            display.label.style.border = "1px solid " + inputs.color.value;
+        } else {
+            display.label.style.border = "none";
+        }
+        
+        // 4. Scent Visibility
+        display.scent.style.display = inputs.scent.value.trim() === "" ? "none" : "block";
+
+        // 5. Trigger Save
+        saveState();
+    }
+
+    // --- STORAGE LOGIC ---
+    function saveState() {
+        const data = {
+            // Standard Inputs
+            font: inputs.font.value,
+            color: inputs.color.value,
+            brand: inputs.brand.value,
+            scent: inputs.scent.value,
+            warning: inputs.warning.value,
+            web: inputs.web.value,
+            weight: inputs.weight.value,
+            border: inputs.border.checked,
+            // Custom UI States
+            shape: activeShape,
+            icon: activeIcon
+        };
+        localStorage.setItem('levor_label_state', JSON.stringify(data));
+    }
+
+    function loadState() {
+        const saved = localStorage.getItem('levor_label_state');
+        if (!saved) return; // No save found, use defaults
+
+        try {
+            const data = JSON.parse(saved);
+            
+            // Restore Standard Inputs
+            inputs.font.value = data.font || "'Inter', sans-serif";
+            inputs.color.value = data.color || "#000000";
+            inputs.brand.value = data.brand || "";
+            inputs.scent.value = data.scent || "";
+            inputs.warning.value = data.warning || "";
+            inputs.web.value = data.web || "";
+            inputs.weight.value = data.weight || "";
+            inputs.border.checked = data.border;
+
+            // Restore Custom UI
+            // We pass 'null' as the event because we are loading programmatically
+            if(data.shape) setShape(data.shape, null);
+            if(data.icon) setIcon(data.icon, null);
+
+            // Force update to render changes
+            updatePreview();
+
+        } catch (e) {
+            console.error("Error loading save state", e);
+        }
+    }
+
+    // --- TEMPLATE SWITCHING ---
+    function setShape(shape, event) {
+        activeShape = shape; // Update state var
+
+        // Update CSS Classes
+        display.label.classList.remove('shape-round', 'shape-square');
+        if (shape === 'round') display.label.classList.add('shape-round');
+        if (shape === 'square') display.label.classList.add('shape-square');
+        
+        // Update Buttons (UI)
+        document.querySelectorAll('.template-option').forEach(el => el.classList.remove('active'));
+        
+        // If triggered by click, use event.target. If loading, find button by onclick attribute logic
+        if (event) {
+            event.currentTarget.classList.add('active');
+        } else {
+            // Programmatic update: find the button that matches this shape
+            // (We iterate buttons and check if their onclick string contains the shape name)
+            document.querySelectorAll('.template-option').forEach(btn => {
+                if(btn.getAttribute('onclick').includes(`'${shape}'`)) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+        updatePreview(); // Save
+    }
+
+    // --- ICON SWITCHING ---
+    function setIcon(iconClass, event) {
+        activeIcon = iconClass; // Update state var
+
+        // Update Display
+        if (iconClass === 'none') {
+            display.icon.style.display = 'none';
+        } else {
+            display.icon.style.display = 'inline-block';
+            display.icon.className = iconClass;
+        }
+
+        // Update Buttons (UI)
+        document.querySelectorAll('.icon-option').forEach(el => el.classList.remove('active'));
+
+        if (event) {
+            event.currentTarget.classList.add('active');
+        } else {
+            // Programmatic update
+            document.querySelectorAll('.icon-option').forEach(btn => {
+                if(btn.getAttribute('onclick').includes(`'${iconClass}'`)) {
+                    btn.classList.add('active');
+                }
+            });
+        }
+        updatePreview(); // Save
+    }
+
+    // --- DOWNLOAD ---
+    function downloadLabel() {
+        const element = document.getElementById('label-render');
+        html2canvas(element, { scale: 4, backgroundColor: null }).then(canvas => {
+            const link = document.createElement('a');
+            link.download = 'levor-label.png';
+            link.href = canvas.toDataURL("image/png");
+            link.click();
+        });
+    }
+
+    // --- INITIALIZATION ---
+    // 1. Attach Listeners to standard inputs
+    Object.values(inputs).forEach(input => {
+        input.addEventListener('input', updatePreview);
+        input.addEventListener('change', updatePreview);
+    });
+
+    // 2. Load data from LocalStorage
+    loadState();
+    
+    // 3. Initial Render (in case loadState didn't find anything)
+    if(!localStorage.getItem('levor_label_state')) {
+        updatePreview();
+    }
+
+</script>
+
+</body>
+</html>
