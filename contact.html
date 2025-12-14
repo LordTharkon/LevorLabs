@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact | Levor Labs</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
+    
+    <style>
+        /* Add these to your styles.css eventually */
+        .form-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white; /* Assuming light mode based on screenshot */
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #374151;
+        }
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            /* This ensures padding stays INSIDE the 100% width */
+            box-sizing: border-box; 
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.95rem; /* Matches your other tools better */
+            transition: border-color 0.2s;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: #0F4C75; /* Matches your primary brand color */
+            box-shadow: 0 0 0 3px rgba(15, 76, 117, 0.1);
+        }
+
+        /* Prevent users from dragging the text area too wide and breaking layout */
+        textarea.form-control {
+            resize: vertical; 
+        }
+        .btn-submit {
+            background-color: #0f172a; /* Dark theme color from your header */
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            width: 100%;
+        }
+        .btn-submit:hover {
+            opacity: 0.9;
+        }
+    </style>
+</head>
+<body>
+
+<div class="background-grid"></div>
+
+<header>
+    <div class="container header-content">
+        <a href="/index.html" class="brand">
+            <div class="brand-icon"><i class="ph-fill ph-flask"></i></div>
+            <div class="brand-text">Levor<span>Labs</span></div>
+			</a>
+        <nav>
+            <a href="/contact.html" class="nav-link">Contact<i class="ph ph-envelope"></i> </a>
+            
+        </nav>
+    </div>
+</header>
+
+<main class="container">
+    
+    <section class="hero">
+        <h1>Get in <span class="text-gradient">Touch.</span></h1>
+        <p class="hero-sub">Have a feature request for the one of our calculators? Found a bug? Let us know.</p>
+    </section>
+
+    <div class="form-container">
+        <form action="https://formspree.io/f/xblnbrwe" method="POST">
+            
+            <div class="form-group">
+                <label for="name">Name</label>
+                <input type="text" id="name" name="name" class="form-control" placeholder="Jane Doe" required>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" class="form-control" placeholder="jane@example.com" required>
+            </div>
+
+            <div class="form-group">
+                <label for="subject">Topic</label>
+                <select id="subject" name="subject" class="form-control">
+                    <option value="General">General Inquiry</option>
+					<option value="General">Affiliate Inquiry</option>
+                    <option value="Soap Calculator">Soap Calculator Feedback</option>
+                    <option value="Candle Calculator">Candle Calculator Feedback</option>
+                    </select>
+            </div>
+
+            <div class="form-group">
+                <label for="message">Message</label>
+                <textarea id="message" name="message" rows="5" class="form-control" placeholder="Go on..." required></textarea>
+            </div>
+
+            <button type="submit" class="btn-submit">Send Message</button>
+        </form>
+    </div>
+
+</main>
+
+<footer>
+    <div class="container footer-content">
+        <p>&copy; 2025 Levor Labs. Built for makers.</p>
+    </div>
+</footer>
+
+</body>
+</html>
