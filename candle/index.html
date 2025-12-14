@@ -36,8 +36,7 @@
     <a href="./index.html" class="brand">
         <i class="ph-fill ph-flame"></i>
         <div class="brand-name">Levor<span style="font-weight:400; opacity: 0.7;">Labs</span></div>
-        <div class="brand-tag">BETA</div>
-    </a>
+        </a>
 
 	<button class="global-unit-btn" onclick="toggleGlobalUnit()">
     <i class="ph-bold ph-arrows-left-right"></i>
@@ -78,10 +77,14 @@
     <div class="main-grid">
         <div class="card">
     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-        <h2 style="margin-bottom:0;"><i class="ph ph-flask"></i> Formulation</h2>
-        
-        
-    </div> <div class="form-group">
+    <h2 style="margin-bottom:0;"><i class="ph ph-flask"></i> Formulation</h2>
+    
+    <button class="global-unit-btn mobile-unit-btn" onclick="toggleGlobalUnit()">
+        <i class="ph-bold ph-arrows-left-right"></i>
+        <span class="mobile-unit-text">OZ / IN</span>
+    </button>
+</div>
+	<div class="form-group">
         <label for="waxSelector">Wax Type</label>
         <select id="waxSelector"></select>
     </div>
@@ -297,7 +300,27 @@
     }
     
     calculate();
+	
+	
+	// Sync the text labels between Desktop and Mobile buttons
+    document.addEventListener('click', function(e) {
+        // Check if ANY unit button was clicked
+        if (e.target.closest('.global-unit-btn')) {
+            setTimeout(() => {
+                // 1. Get the text from the main button (which the logic updates)
+                const mainLabel = document.getElementById('global-unit-label').textContent;
+                
+                // 2. Copy that text to the mobile button
+                const mobileLabel = document.querySelector('.mobile-unit-text');
+                if(mobileLabel) mobileLabel.textContent = mainLabel;
+            }, 50); // Small delay to let the calculation logic finish first
+        }
+    });
 </script>
+
+<script src="footer.js"></script>
+
+
 
 </body>
 

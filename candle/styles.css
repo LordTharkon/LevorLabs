@@ -1,4 +1,8 @@
 /* --- GLOBAL VARIABLES --- */
+
+* {
+    box-sizing: border-box;
+}
 :root {
     --bg-color: #F9FAFB;
     --card-bg: #FFFFFF;
@@ -20,14 +24,18 @@ body {
     background-color: var(--bg-color);
     color: var(--text-dark);
     margin: 0;
-    padding: 40px 20px;
+    padding: 0; /* <--- CHANGE THIS TO 0 */
     min-height: 100vh;
+    display: flex;             /* Optional: Helps push footer down */
+    flex-direction: column;    /* Optional: Helps push footer down */
 }
 
 .container {
     max-width: 1000px;
     width: 100%;
     margin: 0 auto;
+	padding: 40px 20px;
+	flex: 1;
 }
 
 /* --- HEADER & NAVIGATION --- */
@@ -695,3 +703,26 @@ input[type=range]::-moz-range-track {
                 box-shadow: none; border: 1px solid currentColor !important; 
             }
         }
+		
+		
+
+/* --- MOBILE UNIT BUTTON LOGIC --- */
+
+/* By default (Desktop), hide the button inside the card */
+.mobile-unit-btn {
+    display: none;
+    margin-left: 0; /* Reset the margin used in the header */
+}
+
+/* On Mobile Screens: Swap them! */
+@media (max-width: 768px) {
+    /* Hide the HEADER button */
+    header .global-unit-btn {
+        display: none !important;
+    }
+
+    /* Show the CARD button */
+    .mobile-unit-btn {
+        display: flex !important;
+    }
+}
