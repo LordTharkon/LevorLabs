@@ -1,467 +1,440 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-// --- CONFIGURATION ---
-// PASTE YOUR FIREBASE CONFIG HERE
+// ==========================================
+// 1. CONFIGURATION
+// ==========================================
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID"
+    // PASTE YOUR KEYS HERE
+    apiKey: "AIzaSyAI8X4hajgWTY9qD_15rDbjTVOSgF9_uqc",
+    authDomain: "love-letters-e1cc8.firebaseapp.com",
+    projectId: "love-letters-e1cc8",
+    storageBucket: "love-letters-e1cc8.firebasestorage.app",
+    messagingSenderId: "283656577082",
+    appId: "1:283656577082:web:a4851cbd8d7dc9a97dd503",
+    measurementId: "G-PG776RLEKH"
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const provider = new GoogleAuthProvider();
-
-// --- GAME DATA & DICTIONARY ---
-// In a real app, fetch this from a file. This is a small sample.
-const WORD_LIST = [
-    "APPLE", "BEACH", "BRAIN", "BREAD", "BRUSH", "CHAIR", "CHEST", "CHORD", 
-    "CLICK", "CLOCK", "CLOUD", "DANCE", "DIARY", "DRINK", "DRIVE", "EARTH", 
-    "FEAST", "FIELD", "FRUIT", "GLASS", "GRAPE", "GREEN", "GHOST", "HEART", 
-    "HOUSE", "JUICE", "LIGHT", "LEMON", "MELON", "MONEY", "MUSIC", "NIGHT", 
-    "PARTY", "PIANO", "PILOT", "PLANE", "PHONE", "PLANT", "PLATE", "POWER", 
-    "RADIO", "RIVER", "ROBOT", "SHEEP", "SHIRT", "SHOES", "SMILE", "SNAKE", 
-    "SPACE", "SPOON", "STORM", "TABLE", "TIGER", "TOAST", "TOUCH", "TRAIN", 
-    "TRUCK", "VOICE", "WATER", "WATCH", "WHALE", "WORLD", "WRITE", "YOUTH"
+// REGULAR MODE LIST (Romance)
+const WORD_LIST_REGULAR = [
+    "HEART", "LOVER", "DREAM", "SMILE", "YOURS", "HONEY", "SWEET", 
+    "CUPID", "ADORE", "BLISS", "FAITH", "GRACE", "HAPPY", "LIGHT"
 ];
 
-// --- STATE MANAGEMENT ---
-let gameState = {
-    currentUser: null,
-    targetDate: null,   // The date we are currently playing (YYYY-MM-DD)
-    solution: "",
-    guesses: [],        // Array of strings
-    currentGuess: "",
-    status: "playing",  // playing, won, lost
-    rowIndex: 0
-};
+// HARD MODE LIST (Random/Tricky words fallback)
+const WORD_LIST_HARD = [
+    "XYLYL", "CRYPT", "GYPSY", "VIVID", "FJORD", "GAWKS", "JAZZY",
+    "QUAFF", "PUPAL", "JUMPY", "WHELP", "XYLEM", "QUEUE", "VIXEN"
+];
 
-// --- DOM ELEMENTS ---
-const board = document.getElementById("board");
-const keyboardContainer = document.getElementById("keyboard-container");
-const messageContainer = document.getElementById("message-container");
-const datePicker = document.getElementById("game-date");
-const loginBtn = document.getElementById("login-btn");
-const logoutBtn = document.getElementById("logout-btn");
-const userInfo = document.getElementById("user-info");
+const START_DATE = new Date('2025-01-01T00:00:00-05:00'); 
 
-// --- INITIALIZATION ---
+// ==========================================
+// 2. INIT & AUTH
+// ==========================================
+let db, auth, user;
 
-function init() {
-    // 1. Set Date Picker to Today (Eastern Time)
-    const todayEST = getEasternDateString(new Date());
-    datePicker.value = todayEST;
-    datePicker.max = todayEST; // Can't play future
+try {
+    firebase.initializeApp(firebaseConfig);
+    db = firebase.firestore();
+    auth = firebase.auth();
     
-    // 2. Setup Keyboard
-    createKeyboard();
-
-    // 3. Load Game for selected date
-    loadGameForDate(todayEST);
-
-    // 4. Listeners
-    setupInputListeners();
-    
-    datePicker.addEventListener('change', (e) => {
-        loadGameForDate(e.target.value);
+    auth.onAuthStateChanged(u => {
+        user = u;
+        updateAuthUI();
+        if (user) {
+            document.getElementById('loginModal').classList.remove('open');
+            loadGameData();
+        }
     });
+} catch (e) { console.error("Firebase Init Error:", e); }
 
-    loginBtn.addEventListener('click', login);
-    logoutBtn.addEventListener('click', logout);
-}
-
-// --- CORE GAME LOGIC ---
-
-function loadGameForDate(dateStr) {
-    // Reset internal state
-    gameState.targetDate = dateStr;
-    gameState.guesses = [];
-    gameState.currentGuess = "";
-    gameState.status = "playing";
-    gameState.rowIndex = 0;
-    
-    // Deterministic Word Selection based on Date
-    gameState.solution = getWordForDate(dateStr);
-    
-    console.log(`Solution for ${dateStr}: ${gameState.solution}`); // For debugging
-
-    // Clear UI
-    board.innerHTML = '';
-    createGrid();
-    resetKeyboardColors();
-
-    // If user is logged in, try to fetch progress from Firestore
-    if (gameState.currentUser) {
-        fetchUserProgress(dateStr);
+function updateAuthUI() {
+    const container = document.getElementById('authContainer');
+    if (user) {
+        // Show name with a pencil icon, clicking opens the modal
+        const name = user.displayName || 'Babe';
+        container.innerHTML = `
+            <span class="auth-status" onclick="openProfileModal()" title="Edit Profile">
+                Hi, ${name} ✎
+            </span>`;
+    } else {
+        container.innerHTML = `
+            <button class="icon-btn" onclick="document.getElementById('loginModal').classList.add('open')">
+                Sign In
+            </button>`;
     }
 }
 
-// Pseudo-random generator using date string as seed
-function getWordForDate(dateStr) {
-    let hash = 0;
-    for (let i = 0; i < dateStr.length; i++) {
-        hash = ((hash << 5) - hash) + dateStr.charCodeAt(i);
-        hash |= 0; 
-    }
-    const index = Math.abs(hash) % WORD_LIST.length;
-    return WORD_LIST[index];
+function openProfileModal() {
+    const modal = document.getElementById('profileModal');
+    const input = document.getElementById('profileNameInput');
+    // Pre-fill with current name
+    input.value = user.displayName || "";
+    modal.classList.add('open');
 }
 
-// Helper: Get YYYY-MM-DD in New York time
+async function saveName() {
+    const input = document.getElementById('profileNameInput');
+    const newName = input.value.trim();
+    
+    if (!newName) {
+        showToast("Name cannot be empty");
+        return;
+    }
+    
+    try {
+        // A. Update the Auth Profile (Local Session)
+        await user.updateProfile({ displayName: newName });
+        
+        // B. Update the Database Document (For Leaderboard)
+        await db.collection('users').doc(user.uid).set({
+            displayName: newName
+        }, { merge: true });
+
+        // C. Refresh UI
+        updateAuthUI();
+        document.getElementById('profileModal').classList.remove('open');
+        showToast("Name Updated!");
+        
+    } catch (error) {
+        console.error("Error updating name:", error);
+        showToast("Error updating name");
+    }
+}
+
+function loginGoogle() {
+    if(!auth) return;
+    auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(e => showToast(e.message));
+}
+function logout() { if(auth) auth.signOut().then(() => location.reload()); }
+
+// ==========================================
+// 3. GAME STATE & LOGIC
+// ==========================================
+let currentGuess = "";
+let guesses = [];
+let isGameOver = false;
+let targetWord = "";
+let gameDateStr = "";
+let isChecking = false;
+let currentMode = 'regular'; // 'regular' or 'hard'
+
+// Start Game
+setGameDate(getEasternDateString(new Date()));
+
+function toggleMode() {
+    const toggle = document.getElementById('modeToggle');
+    currentMode = toggle.checked ? 'hard' : 'regular';
+    
+    // Visual Updates
+    if (currentMode === 'hard') {
+        document.body.classList.add('hard-mode');
+        document.getElementById('gameTitle').textContent = "Hard Mode";
+    } else {
+        document.body.classList.remove('hard-mode');
+        document.getElementById('gameTitle').textContent = "Love Letters";
+    }
+
+    // Reload the game for the current date with the new mode
+    setGameDate(gameDateStr);
+}
+
 function getEasternDateString(dateObj) {
-    return new Intl.DateTimeFormat('en-CA', { // en-CA gives YYYY-MM-DD
+    return new Intl.DateTimeFormat('en-CA', {
         timeZone: 'America/New_York',
         year: 'numeric', month: '2-digit', day: '2-digit'
     }).format(dateObj);
 }
 
-// --- UI BUILDERS ---
-
-function createGrid() {
-    for (let i = 0; i < 6; i++) {
-        const row = document.createElement("div");
-        row.className = "row";
-        row.id = `row-${i}`;
-        for (let j = 0; j < 5; j++) {
-            const tile = document.createElement("div");
-            tile.className = "tile";
-            tile.id = `row-${i}-tile-${j}`;
-            row.appendChild(tile);
-        }
-        board.appendChild(row);
-    }
-}
-
-function createKeyboard() {
-    const layout = [
-        "QWERTYUIOP",
-        "ASDFGHJKL",
-        "ZXCVBNM"
-    ];
+async function setGameDate(dateStr) {
+    gameDateStr = dateStr;
+    guesses = [];
+    currentGuess = "";
+    isGameOver = false;
+    isChecking = false;
     
-    // Rows mapping
-    const rows = [
-        document.getElementById("row-1"),
-        document.getElementById("row-2"),
-        document.getElementById("row-3")
-    ];
+    document.getElementById('currentDateDisplay').textContent = "Loading...";
 
-    layout.forEach((keys, i) => {
-        if (i === 2) addKey("ENTER", rows[i], true);
-        
-        for (let char of keys) {
-            addKey(char, rows[i]);
+    // --- FETCH WORD BASED ON MODE ---
+    const collectionName = currentMode === 'hard' ? 'puzzles_hard' : 'puzzles';
+    const fallbackList = currentMode === 'hard' ? WORD_LIST_HARD : WORD_LIST_REGULAR;
+
+    try {
+        const doc = await db.collection(collectionName).doc(dateStr).get();
+        if (doc.exists && doc.data().word) {
+            targetWord = doc.data().word.toUpperCase();
+        } else {
+            // Math Fallback
+            const today = new Date(dateStr);
+            const diffTime = Math.abs(today - START_DATE);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
+            const index = diffDays % fallbackList.length;
+            targetWord = fallbackList[index].toUpperCase();
         }
+    } catch (e) {
+        targetWord = fallbackList[0]; 
+    }
 
-        if (i === 2) addKey("⌫", rows[i], true);
-    });
-}
-
-function addKey(char, container, isWide = false) {
-    const btn = document.createElement("button");
-    btn.textContent = char;
-    btn.className = `key ${isWide ? 'wide' : ''}`;
-    btn.setAttribute("data-key", char === "⌫" ? "BACKSPACE" : char);
-    btn.addEventListener("click", () => handleInput(char === "⌫" ? "BACKSPACE" : char));
-    container.appendChild(btn);
-}
-
-// --- INPUT HANDLING ---
-
-function setupInputListeners() {
-    document.addEventListener("keydown", (e) => {
-        let key = e.key.toUpperCase();
-        if (key === "ENTER" || key === "BACKSPACE" || /^[A-Z]$/.test(key)) {
-            handleInput(key);
-        }
-    });
+    // Update UI
+    document.getElementById('currentDateDisplay').textContent = dateStr;
+    document.getElementById('datePicker').value = dateStr;
+    updateArrowButtons();
+    createBoard();
+    createKeyboard(); // Reset keyboard colors
+    
+    if(user) loadGameData();
 }
 
 function handleInput(key) {
-    if (gameState.status !== "playing") return;
-
-    if (key === "BACKSPACE") {
-        gameState.currentGuess = gameState.currentGuess.slice(0, -1);
-    } else if (key === "ENTER") {
-        if (gameState.currentGuess.length === 5) {
-            submitGuess();
-        } else {
-            showMessage("Not enough letters");
-        }
-    } else if (gameState.currentGuess.length < 5) {
-        gameState.currentGuess += key;
-    }
-    updateGrid();
-}
-
-function updateGrid() {
-    const row = document.getElementById(`row-${gameState.rowIndex}`);
-    const tiles = row.children;
-    
-    // Clear current row visual
-    for (let i = 0; i < 5; i++) {
-        tiles[i].textContent = "";
-        tiles[i].removeAttribute("data-state");
-        tiles[i].style.borderColor = "";
-    }
-
-    // Fill letters
-    for (let i = 0; i < gameState.currentGuess.length; i++) {
-        tiles[i].textContent = gameState.currentGuess[i];
-        tiles[i].setAttribute("data-state", "filled");
+    if (isGameOver || isChecking) return;
+    const upperKey = key.toUpperCase();
+    if (upperKey === 'ENTER') submitGuess();
+    else if (upperKey === 'DEL' || upperKey === 'BACKSPACE') {
+        currentGuess = currentGuess.slice(0, -1);
+        updateGrid();
+    } else if (/^[A-Z]$/.test(upperKey) && currentGuess.length < 5 && guesses.length < 6) {
+        currentGuess += upperKey;
+        updateGrid();
     }
 }
-
-// --- GUESS LOGIC ---
 
 async function submitGuess() {
-    const guess = gameState.currentGuess;
+    if (currentGuess.length !== 5) { showToast("Not enough letters"); shakeRow(); return; }
     
-    // Simple dictionary check (client side for demo)
-    if (!WORD_LIST.includes(guess)) {
-        showMessage("Not in word list");
-        shakeRow();
-        return;
+    isChecking = true;
+    const isValid = await checkWordValidity(currentGuess);
+    if (!isValid) { showToast("Not in word list"); shakeRow(); isChecking = false; return; }
+    
+    guesses.push(currentGuess);
+    currentGuess = "";
+    animateRow(guesses.length - 1);
+    updateKeyboardColors();
+    saveGameData();
+
+    if (guesses[guesses.length - 1] === targetWord) {
+        isGameOver = true;
+        setTimeout(() => showToast(currentMode === 'hard' ? "You're a genius! 🧠" : "I Love You! ❤️"), 1500);
+    } else if (guesses.length === 6) {
+        isGameOver = true;
+        setTimeout(() => showToast(targetWord), 1500);
     }
-
-    gameState.guesses.push(guess);
-    const rowId = gameState.rowIndex;
-    
-    // Animate and Color
-    await revealTiles(guess, rowId);
-    
-    // Game Over Logic
-    if (guess === gameState.solution) {
-        gameState.status = "won";
-        showMessage("Splendid!");
-        triggerConfetti(); // Optional polish
-    } else if (gameState.guesses.length === 6) {
-        gameState.status = "lost";
-        showMessage(`The word was ${gameState.solution}`);
-    } else {
-        gameState.rowIndex++;
-        gameState.currentGuess = "";
-    }
-
-    // Save to Firebase
-    if (gameState.currentUser) {
-        saveProgress();
-    }
+    isChecking = false;
 }
 
-function revealTiles(guess, rowIdx) {
-    return new Promise((resolve) => {
-        const row = document.getElementById(`row-${rowIdx}`);
-        const tiles = row.children;
-        const solutionChars = gameState.solution.split('');
-        const guessChars = guess.split('');
-        
-        // Track correctness for keyboard coloring
-        const evaluation = Array(5).fill('absent');
-
-        // 1. Find Greens
-        guessChars.forEach((char, i) => {
-            if (char === solutionChars[i]) {
-                evaluation[i] = 'correct';
-                solutionChars[i] = null; // Mark as used
-                updateKeyboard(char, 'correct');
-            }
-        });
-
-        // 2. Find Yellows
-        guessChars.forEach((char, i) => {
-            if (evaluation[i] === 'correct') return;
-            
-            const indexInSolution = solutionChars.indexOf(char);
-            if (indexInSolution > -1) {
-                evaluation[i] = 'present';
-                solutionChars[indexInSolution] = null;
-                updateKeyboard(char, 'present');
-            } else {
-                updateKeyboard(char, 'absent');
-            }
-        });
-
-        // 3. Animate Flip
-        let completedAnimations = 0;
-        guessChars.forEach((char, i) => {
-            setTimeout(() => {
-                const tile = tiles[i];
-                tile.classList.add('flip');
-                
-                // Change color halfway through animation (CSS timing matches)
-                setTimeout(() => {
-                    tile.setAttribute('data-state', evaluation[i]);
-                }, 250);
-
-                tile.addEventListener('animationend', () => {
-                    completedAnimations++;
-                    if (completedAnimations === 5) resolve();
-                }, { once: true });
-
-            }, i * 100); // Stagger animation
-        });
-    });
-}
-
-function updateKeyboard(char, status) {
-    const keyBtn = document.querySelector(`button[data-key="${char}"]`);
-    if (!keyBtn) return;
-
-    // Don't downgrade status (Green > Yellow > Gray)
-    const currentStatus = keyBtn.classList.contains('correct') ? 'correct' 
-                        : keyBtn.classList.contains('present') ? 'present' 
-                        : 'absent';
-    
-    if (currentStatus === 'correct') return;
-    if (currentStatus === 'present' && status === 'absent') return;
-    
-    // Remove old classes and add new
-    keyBtn.classList.remove('present', 'absent');
-    keyBtn.classList.add(status);
-}
-
-function resetKeyboardColors() {
-    document.querySelectorAll('.key').forEach(k => {
-        k.classList.remove('correct', 'present', 'absent');
-    });
-}
-
-function shakeRow() {
-    const row = document.getElementById(`row-${gameState.rowIndex}`);
-    row.style.animation = "shake 0.5s";
-    row.addEventListener("animationend", () => row.style.animation = "", { once: true });
-}
-
-// Add shake keyframe dynamically or in CSS
-const styleSheet = document.createElement("style");
-styleSheet.innerText = `
-@keyframes shake {
-    10%, 90% { transform: translateX(-1px); }
-    20%, 80% { transform: translateX(2px); }
-    30%, 50%, 70% { transform: translateX(-4px); }
-    40%, 60% { transform: translateX(4px); }
-}`;
-document.head.appendChild(styleSheet);
-
-function showMessage(msg) {
-    messageContainer.textContent = msg;
-    messageContainer.classList.add("show");
-    setTimeout(() => {
-        messageContainer.classList.remove("show");
-    }, 2000);
-}
-
-// --- FIREBASE INTEGRATION ---
-
-// Login
-async function login() {
+async function checkWordValidity(word) {
+    if (word === targetWord) return true;
+    // Just use API for everything to be safe
     try {
-        await signInWithPopup(auth, provider);
-    } catch (error) {
-        console.error("Login failed", error);
+        const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
+        return response.ok; 
+    } catch (err) { return true; }
+}
+
+// ==========================================
+// 4. DATA SYNC (DUAL MODE)
+// ==========================================
+function saveGameData() {
+    if (!user || !db) return;
+
+    // Determine subcollection: 'history' (regular) or 'history_hard'
+    const subColl = currentMode === 'hard' ? 'history_hard' : 'history';
+    const gameRef = db.collection('users').doc(user.uid).collection(subColl).doc(gameDateStr);
+    
+    gameRef.set({
+        guesses: guesses,
+        word: targetWord,
+        solved: (guesses[guesses.length-1] === targetWord),
+        lastPlayed: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    if (isGameOver) {
+        gameRef.get().then(doc => {
+            if (doc.exists && !doc.data().statsRecorded) {
+                updateUserStats(guesses[guesses.length-1] === targetWord);
+                gameRef.update({ statsRecorded: true });
+            }
+        });
     }
 }
 
-// Logout
-function logout() {
-    signOut(auth).then(() => {
-        location.reload(); // Simple reload to clear state
-    });
-}
+function updateUserStats(isWin) {
+    const userRef = db.collection('users').doc(user.uid);
+    let updateData = { displayName: user.displayName || "Anonymous" };
 
-// Auth State Listener
-onAuthStateChanged(auth, (user) => {
-    if (user) {
-        gameState.currentUser = user;
-        loginBtn.classList.add("hidden");
-        logoutBtn.classList.remove("hidden");
-        userInfo.classList.remove("hidden");
-        userInfo.textContent = `Hi, ${user.displayName.split(' ')[0]}`;
-        
-        // Sync current date's game
-        fetchUserProgress(gameState.targetDate);
+    // Update specific fields based on mode
+    // Regular: totalWins, totalGames, totalGuessSum
+    // Hard: hard_wins, hard_games, hard_guessSum
+    const prefix = currentMode === 'hard' ? 'hard_' : 'regular_'; // Note: mapping 'regular' to existing 'total' fields might be cleaner, but let's be explicit
+    
+    // Compatibility: Use 'totalWins' for regular for backward compat, 'hard_wins' for hard
+    if (currentMode === 'hard') {
+        updateData.hard_games = firebase.firestore.FieldValue.increment(1);
+        if (isWin) {
+            updateData.hard_wins = firebase.firestore.FieldValue.increment(1);
+            updateData.hard_guessSum = firebase.firestore.FieldValue.increment(guesses.length);
+        }
     } else {
-        gameState.currentUser = null;
+        // Regular mode (using original field names)
+        updateData.totalGames = firebase.firestore.FieldValue.increment(1);
+        if (isWin) {
+            updateData.totalWins = firebase.firestore.FieldValue.increment(1);
+            updateData.totalGuessSum = firebase.firestore.FieldValue.increment(guesses.length);
+        }
     }
-});
 
-// Save Data (Firestore Structure: users -> uid -> games -> date)
-async function saveProgress() {
-    if (!gameState.currentUser) return;
+    userRef.set(updateData, { merge: true });
+}
+
+function loadGameData() {
+    if (!user || !db) return;
+    const subColl = currentMode === 'hard' ? 'history_hard' : 'history';
     
-    const gameRef = doc(db, "users", gameState.currentUser.uid, "games", gameState.targetDate);
-    
-    await setDoc(gameRef, {
-        guesses: gameState.guesses,
-        status: gameState.status,
-        lastUpdated: new Date()
+    db.collection('users').doc(user.uid).collection(subColl).doc(gameDateStr).get()
+    .then(doc => {
+        if (doc.exists) {
+            const data = doc.data();
+            guesses = data.guesses;
+            guesses.forEach((g, idx) => {
+                const rowDiv = document.getElementsByClassName('row')[idx];
+                for(let i=0; i<5; i++) rowDiv.children[i].textContent = g[i];
+                animateRow(idx);
+            });
+            updateKeyboardColors();
+            if(data.solved || guesses.length >= 6) isGameOver = true;
+        }
     });
 }
 
-// Load Data
-async function fetchUserProgress(dateStr) {
-    if (!gameState.currentUser) return;
-
-    const gameRef = doc(db, "users", gameState.currentUser.uid, "games", dateStr);
-    const docSnap = await getDoc(gameRef);
-
-    if (docSnap.exists()) {
-        const data = docSnap.data();
-        
-        // Replay the game state
-        gameState.guesses = []; // clear and replay
-        gameState.rowIndex = 0;
-        gameState.status = data.status;
-        gameState.currentGuess = "";
-        
-        // Reset Visuals
-        resetKeyboardColors();
-        createGrid(); // Rebuild grid to clear old
-        board.innerHTML = '';
-        createGrid();
-
-        // Re-submit previous guesses instantly (no animation)
-        for (const guess of data.guesses) {
-            gameState.currentGuess = guess;
-            // logic of submitGuess but without saving again or waiting too long
-            gameState.guesses.push(guess);
-            
-            // Re-color grid
-            const row = document.getElementById(`row-${gameState.rowIndex}`);
-            const tiles = row.children;
-            const sol = gameState.solution.split('');
-            const g = guess.split('');
-            
-            // Basic logic for recoloring without full animation delay
-            g.forEach((char, i) => {
-                tiles[i].textContent = char;
-                let status = 'absent';
-                if(char === sol[i]) status = 'correct';
-                else if(sol.includes(char)) status = 'present';
-                
-                tiles[i].setAttribute('data-state', status);
-                updateKeyboard(char, status);
-            });
-            
-            gameState.rowIndex++;
-        }
-        
-        // Clean up current guess buffer
-        gameState.currentGuess = "";
-
-        if (gameState.status !== "playing") {
-           showMessage(gameState.status === "won" ? "Completed!" : "Game Over");
-        }
-    }
+// ==========================================
+// LEADERBOARD (Updated for Toggle)
+// ==========================================
+function toggleLeaderboard() {
+    const modal = document.getElementById('leaderboardModal');
+    modal.style.display = (modal.style.display === 'flex') ? 'none' : 'flex';
+    if(modal.style.display === 'flex') fetchLeaderboard();
 }
 
-// Start app
-init();
+function fetchLeaderboard() {
+    const tbody = document.querySelector('#leaderboardTable tbody');
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center">Loading...</td></tr>';
+
+    // Decide which stats to pull based on current active mode
+    const sortField = currentMode === 'hard' ? 'hard_wins' : 'totalWins';
+    const displayMode = currentMode === 'hard' ? "Hard Mode" : "Regular";
+    document.querySelector('#leaderboardModal h2').textContent = `🏆 Leaderboard (${displayMode})`;
+
+    db.collection('users').orderBy(sortField, 'desc').limit(20).get()
+    .then(snapshot => {
+        tbody.innerHTML = ''; 
+        let rank = 1;
+        if (snapshot.empty) {
+            tbody.innerHTML = '<tr><td colspan="4">No games yet!</td></tr>'; return;
+        }
+
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            const name = data.displayName || "Unknown";
+            
+            // Extract correct stats
+            let wins, games, guessSum;
+            if (currentMode === 'hard') {
+                wins = data.hard_wins || 0;
+                games = data.hard_games || 0;
+                guessSum = data.hard_guessSum || 0;
+            } else {
+                wins = data.totalWins || 0;
+                games = data.totalGames || 0;
+                guessSum = data.totalGuessSum || 0;
+            }
+
+            if (games === 0) return; // Skip empty players for this mode
+
+            let average = (wins > 0) ? (guessSum / wins).toFixed(2) : "-";
+            
+            const tr = document.createElement('tr');
+            if (user && doc.id === user.uid) tr.classList.add('is-me');
+            tr.innerHTML = `<td>#${rank}</td><td>${name}</td><td>${wins}</td><td>${average}</td>`;
+            tbody.appendChild(tr);
+            rank++;
+        });
+    });
+}
+
+// (Rest of the Visual Helpers, Keyboard, and Date Nav remain mostly same, just ensure they rely on global variables)
+// ... [Insert createBoard, updateGrid, shakeRow, animateRow, createKeyboard, updateKeyboardColors, changeDate, updateArrowButtons, toggleArchive, loadArchivedDate, showToast, listeners] ...
+
+// Helper function definitions needed for above to work (Copying condensed versions)
+function updateGrid() {
+    const rowDiv = document.getElementsByClassName('row')[guesses.length];
+    if (!rowDiv) return;
+    for (let i = 0; i < 5; i++) {
+        rowDiv.children[i].textContent = currentGuess[i] || "";
+        rowDiv.children[i].dataset.state = currentGuess[i] ? "active" : "";
+        rowDiv.children[i].style.borderColor = currentGuess[i] ? "#888" : "#d3d6da";
+    }
+}
+function shakeRow() { document.getElementsByClassName('row')[guesses.length]?.classList.add('shake'); setTimeout(()=>document.getElementsByClassName('row')[guesses.length]?.classList.remove('shake'), 500); }
+function createBoard() {
+    const board = document.getElementById('board'); board.innerHTML = '';
+    for(let i=0;i<6;i++){ const r=document.createElement('div'); r.className='row'; 
+    for(let j=0;j<5;j++){ const t=document.createElement('div'); t.className='tile'; r.appendChild(t); } board.appendChild(r); }
+}
+function createKeyboard() {
+    const layout = ["QWERTYUIOP", "ASDFGHJKL", "ZXCVBNM"];
+    const kb = document.getElementById('keyboard'); kb.innerHTML = '';
+    layout.forEach((rowStr, idx) => {
+        const rowDiv = document.createElement('div'); rowDiv.className = 'key-row';
+        if(idx===2) { const b=document.createElement('button'); b.className='key key-wide'; b.textContent='ENTER'; b.onclick=()=>handleInput('ENTER'); rowDiv.appendChild(b); }
+        rowStr.split('').forEach(char => { const k=document.createElement('button'); k.className='key'; k.textContent=char; k.onclick=()=>handleInput(char); rowDiv.appendChild(k); });
+        if(idx===2) { const b=document.createElement('button'); b.className='key key-wide'; b.textContent='DEL'; b.onclick=()=>handleInput('DEL'); rowDiv.appendChild(b); }
+        kb.appendChild(rowDiv);
+    });
+}
+function updateKeyboardColors() {
+    const keys = document.querySelectorAll('.key');
+    guesses.forEach(g => { for(let i=0; i<5; i++) {
+        const char = g[i]; const key = Array.from(keys).find(k => k.textContent === char);
+        if(!key) continue;
+        if (targetWord[i] === char) key.className = 'key correct';
+        else if (targetWord.includes(char) && !key.classList.contains('correct')) key.className = 'key present';
+        else if (!targetWord.includes(char) && !key.classList.contains('correct') && !key.classList.contains('present')) key.className = 'key absent';
+    }});
+}
+function animateRow(rowIndex) {
+    const rowDiv = document.getElementsByClassName('row')[rowIndex];
+    const tiles = rowDiv.children;
+    const guess = guesses[rowIndex];
+    let wordArray = targetWord.split("");
+    const guessArray = guess.split("");
+    const states = Array(5).fill("absent");
+
+    for (let i = 0; i < 5; i++) {
+        if (guessArray[i] === wordArray[i]) { states[i] = "correct"; wordArray[i] = null; guessArray[i] = null; }
+    }
+    for (let i = 0; i < 5; i++) {
+        if (guessArray[i] && wordArray.includes(guessArray[i])) { states[i] = "present"; wordArray[wordArray.indexOf(guessArray[i])] = null; }
+    }
+    for (let i = 0; i < 5; i++) {
+        setTimeout(() => { tiles[i].dataset.state = states[i]; tiles[i].style.borderColor = "transparent"; }, i * 250);
+    }
+}
+function changeDate(days) {
+    const parts = gameDateStr.split('-');
+    const current = new Date(parts[0], parts[1] - 1, parts[2]);
+    current.setDate(current.getDate() + days);
+    const y = current.getFullYear();
+    const m = String(current.getMonth() + 1).padStart(2, '0');
+    const d = String(current.getDate()).padStart(2, '0');
+    const newDateStr = `${y}-${m}-${d}`;
+    if (newDateStr > getEasternDateString(new Date())) return;
+    setGameDate(newDateStr);
+}
+function updateArrowButtons() {
+    const nextBtn = document.getElementById('nextBtn');
+    if (gameDateStr >= getEasternDateString(new Date())) nextBtn.disabled = true; else nextBtn.disabled = false;
+}
+function toggleArchive() { const m=document.getElementById('archiveModal'); m.style.display=(m.style.display==='flex')?'none':'flex'; }
+function loadArchivedDate() { const d=document.getElementById('datePicker').value; if(d){ setGameDate(d); toggleArchive(); } }
+function showToast(msg) { const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 3000); }
+document.addEventListener('keydown', (e) => {
+    const key = e.key;
+    if (key === 'Enter') handleInput('ENTER'); else if (key === 'Backspace') handleInput('DEL'); else if (/^[a-zA-Z]$/.test(key)) handleInput(key.toUpperCase());
+});

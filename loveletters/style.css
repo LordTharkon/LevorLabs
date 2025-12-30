@@ -1,167 +1,433 @@
 :root {
-    --bg-color: #121213;
-    --board-bg: #121213;
-    --text-color: #ffffff;
-    --key-bg: #818384;
-    --key-bg-eval: #3a3a3c;
-    --border-color: #3a3a3c;
-    --correct: #538d4e;
-    --present: #b59f3b;
-    --absent: #3a3a3c;
-    --filled-border: #565758;
+    /* "Sage & Rose" Palette */
+    --c-correct: #6ca965; /* Soft Green for Success */
+    --c-present: #c75c6c; /* Rose for "Warm/Present" */
+    --c-absent:  #787c7e; /* Gray */
+    --c-bg:      #f8f5f2; /* Cream Background */
+    --c-text:    #333;
+    --c-border:  #d3d6da;
+    --tile-size: 58px;
+}
+
+* {
+    box-sizing: border-box;
 }
 
 body {
-    background-color: var(--bg-color);
-    color: var(--text-color);
-    font-family: 'Inter', sans-serif;
-    margin: 0;
+    font-family: 'Montserrat', sans-serif;
+    background-color: var(--c-bg);
+    color: var(--c-text);
     display: flex;
     flex-direction: column;
+    align-items: center;
     height: 100vh;
-    overflow: hidden;
+    margin: 0;
+    overflow: hidden; 
 }
 
-/* Header */
-header {
+/* --- Navigation --- */
+nav {
+    width: 100%;
+    max-width: 500px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 1rem;
-    height: 65px;
-    border-bottom: 1px solid var(--border-color);
+    padding: 10px 20px;
+    border-bottom: 1px solid var(--c-border);
+}
+
+.nav-center {
+    text-align: center;
+}
+
+button.icon-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    color: var(--c-text);
+}
+
+.auth-status {
+    font-size: 0.8rem;
+    cursor: pointer;
+    text-decoration: underline;
 }
 
 .title {
     font-weight: 800;
     font-size: 1.5rem;
-    letter-spacing: 0.1rem;
-    text-align: center;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--c-present); /* Using Rose for Title */
 }
 
-.auth-btn {
-    background: transparent;
-    border: 1px solid var(--text-color);
-    color: var(--text-color);
-    padding: 5px 10px;
-    cursor: pointer;
-    border-radius: 4px;
-    font-weight: 600;
+.date-display {
+    font-size: 0.8rem;
+    color: #666;
+    margin-top: 5px;
 }
 
-.auth-btn:hover { background: rgba(255,255,255,0.1); }
-#user-info { font-size: 0.8rem; margin-right: 10px; }
-.hidden { display: none !important; }
-
-/* Date Picker styling */
-#game-date {
-    background: var(--bg-color);
-    color: var(--text-color);
-    border: 1px solid var(--border-color);
-    padding: 5px;
-    border-radius: 4px;
-    font-family: inherit;
-}
-
-/* Game Board */
-#game-container {
+/* --- Game Grid --- */
+.game-board {
     display: flex;
     flex-direction: column;
-    align-items: center;
-    justify-content: space-between;
-    flex-grow: 1;
-    padding: 20px 0;
-    max-width: 500px;
-    margin: 0 auto;
-    width: 100%;
-}
-
-#board {
-    display: grid;
-    grid-template-rows: repeat(6, 1fr);
-    gap: 5px;
+    justify-content: center;
     padding: 10px;
-    box-sizing: border-box;
-    width: 350px;
-    height: 420px;
+    flex-grow: 1;
 }
 
 .row {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
-    gap: 5px;
+    grid-gap: 5px;
+    margin-bottom: 5px;
 }
 
 .tile {
-    width: 100%;
-    height: 100%;
-    border: 2px solid var(--border-color);
-    display: inline-flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 2rem;
-    font-weight: bold;
-    text-transform: uppercase;
-    user-select: none;
-}
-
-/* Tile States */
-.tile[data-state='filled'] {
-    border-color: var(--filled-border);
-    animation: pop 0.1s;
-}
-.tile[data-state='correct'] { background-color: var(--correct); border-color: var(--correct); }
-.tile[data-state='present'] { background-color: var(--present); border-color: var(--present); }
-.tile[data-state='absent'] { background-color: var(--absent); border-color: var(--absent); }
-.tile.flip { animation: flip 0.5s ease forwards; }
-
-/* Keyboard */
-#keyboard-container { width: 100%; padding: 0 8px; margin-bottom: 20px; }
-.keyboard-row { display: flex; justify-content: center; margin-bottom: 8px; width: 100%; }
-.key {
-    font-family: inherit;
-    font-weight: bold;
-    border: 0;
-    padding: 0;
-    margin: 0 6px 0 0;
-    height: 58px;
-    border-radius: 4px;
-    cursor: pointer;
-    user-select: none;
-    background-color: var(--key-bg);
-    color: var(--text-color);
-    flex: 1;
+    width: var(--tile-size);
+    height: var(--tile-size);
+    border: 2px solid var(--c-border);
     display: flex;
     justify-content: center;
     align-items: center;
+    font-size: 1.8rem;
+    font-weight: 700;
     text-transform: uppercase;
-}
-.key.wide { flex: 1.5; }
-
-/* Keyboard Colors */
-.key.correct { background-color: var(--correct); }
-.key.present { background-color: var(--present); }
-.key.absent { background-color: var(--absent); }
-
-/* Toast Message */
-#message-container {
-    height: 30px;
-    margin-bottom: 10px;
-    color: var(--text-color);
-    font-weight: bold;
-    background: #fff;
-    color: #000;
-    padding: 10px 20px;
+    background: white;
     border-radius: 4px;
-    opacity: 0;
-    transition: opacity 0.3s;
 }
-#message-container.show { opacity: 1; }
 
-/* Animations */
+.tile[data-state="active"] { border-color: #888; animation: pop 0.1s; }
+.tile[data-state="correct"] { background: var(--c-correct); border-color: var(--c-correct); color: white; }
+.tile[data-state="present"] { background: var(--c-present); border-color: var(--c-present); color: white; }
+.tile[data-state="absent"] { background: var(--c-absent); border-color: var(--c-absent); color: white; }
+
+/* --- Animations --- */
 @keyframes pop { 50% { transform: scale(1.1); } }
-@keyframes flip {
-    0% { transform: rotateX(0); border-color: var(--filled-border); }
-    50% { transform: rotateX(90deg); border-color: var(--filled-border); }
-    100% { transform: rotateX(0); }
+
+@keyframes shake {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    50% { transform: translateX(5px); }
+    75% { transform: translateX(-5px); }
+    100% { transform: translateX(0); }
+}
+.shake { animation: shake 0.5s; }
+
+/* --- Keyboard --- */
+.keyboard {
+    width: 100%;
+    max-width: 500px;
+    padding: 10px;
+    padding-bottom: 30px;
+}
+.key-row { display: flex; width: 100%; margin: 0 auto 8px; touch-action: manipulation; }
+.key {
+    flex: 1;
+    height: 58px;
+    margin: 0 3px;
+    border-radius: 4px;
+    border: none;
+    background: #d3d6da;
+    font-weight: 600;
+    text-transform: uppercase;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 1rem;
+    user-select: none;
+}
+.key-wide { flex: 1.5; font-size: 0.8rem; }
+.key.correct { background: var(--c-correct); color: white; }
+.key.present { background: var(--c-present); color: white; }
+.key.absent { background: var(--c-absent); color: white; }
+
+/* --- Modals & Toast --- */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(255,255,255,0.95);
+    z-index: 100;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+.modal.open { display: flex; }
+.modal h2 { margin-bottom: 20px; color: var(--c-present); }
+.subtext { margin-top: 20px; font-size: 0.8rem; color: #666; }
+
+.btn-primary {
+    background: var(--c-present); color: white;
+    padding: 15px 30px; border: none; border-radius: 50px;
+    font-size: 1.2rem; cursor: pointer; margin-top: 10px;
+}
+.btn-secondary {
+    background: #eee; color: #333;
+    padding: 10px 20px; border: none; border-radius: 5px;
+    margin-top: 10px; cursor: pointer;
+}
+input[type="date"] { padding: 10px; font-size: 1.2rem; margin-bottom: 20px; }
+
+.toast {
+    position: fixed; top: 10%; left: 50%; transform: translateX(-50%);
+    background: #333; color: white; padding: 10px 20px;
+    border-radius: 5px; opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 200;
+}
+.toast.show { opacity: 1; }
+
+
+/* --- Leaderboard Styles --- */
+.table-container {
+    width: 100%;
+    max-width: 400px;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+thead {
+    background-color: var(--c-present); /* Rose headers */
+    color: white;
+}
+
+th, td {
+    padding: 12px 15px;
+    text-align: left;
+}
+
+th {
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+}
+
+td {
+    border-bottom: 1px solid #eee;
+}
+
+/* Center the numbers */
+th:nth-child(3), td:nth-child(3),
+th:nth-child(4), td:nth-child(4) {
+    text-align: center;
+}
+
+/* Highlight the current user */
+tr.is-me {
+    background-color: #f0f7ef; /* Very light green */
+    font-weight: 600;
+}
+
+/* --- Date Navigation Controls --- */
+.date-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px; /* Space between arrows and date */
+    margin-top: 5px;
+}
+
+.arrow-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem; /* Nice and big */
+    color: var(--c-present); /* Matches the theme color */
+    padding: 0;
+    line-height: 1;
+    transition: opacity 0.2s;
+}
+
+.arrow-btn:hover {
+    opacity: 0.7;
+}
+
+/* Gray out the button if you can't click it (e.g. Future dates) */
+.arrow-btn:disabled {
+    color: var(--c-absent);
+    cursor: default;
+    opacity: 0.3;
+}
+
+/* --- Mode Toggle Switch --- */
+.mode-switch-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 5px;
+}
+
+.mode-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #888;
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 34px;
+    height: 20px;
+}
+
+.switch input { opacity: 0; width: 0; height: 0; }
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+    border-radius: 34px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 14px;
+    width: 14px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: var(--c-correct); /* Green when active */
+}
+
+input:checked + .slider:before {
+    transform: translateX(14px);
+}
+
+/* --- HARD MODE THEME OVERRIDES --- */
+body.hard-mode {
+    --c-bg: #2c3e50;      /* Midnight Blue Background */
+    --c-text: #ecf0f1;    /* Light Text */
+    --c-correct: #e74c3c; /* Red/Orange for Success */
+    --c-present: #f39c12; /* Gold */
+    --c-absent: #7f8c8d;  /* Slate Gray */
+    --c-border: #34495e;
+}
+
+/* 1. Base Tile Style for Hard Mode (Dark) */
+body.hard-mode .tile {
+    background-color: #34495e;
+    border-color: #555;
+    color: white;
+}
+
+/* 2. Base Key Style for Hard Mode */
+body.hard-mode .key {
+    background-color: #95a5a6;
+    color: #2c3e50;
+}
+
+/* --- THE FIX: Explicitly re-apply colors for Hard Mode states --- */
+/* These rules are more specific, so they will override the dark blue above */
+
+body.hard-mode .tile[data-state="correct"] {
+    background-color: var(--c-correct);
+    border-color: var(--c-correct);
+}
+body.hard-mode .tile[data-state="present"] {
+    background-color: var(--c-present);
+    border-color: var(--c-present);
+}
+body.hard-mode .tile[data-state="absent"] {
+    background-color: var(--c-absent);
+    border-color: var(--c-absent);
+}
+
+/* Same for the Keyboard */
+body.hard-mode .key.correct { background-color: var(--c-correct); color: white; }
+body.hard-mode .key.present { background-color: var(--c-present); color: white; }
+body.hard-mode .key.absent  { background-color: var(--c-absent);  color: white; }
+
+/* --- HARD MODE MODAL FIXES --- */
+/* Make the modal background dark */
+body.hard-mode .modal {
+    background: rgba(44, 62, 80, 0.98); 
+}
+
+/* Make the table container dark */
+body.hard-mode .table-container {
+    background-color: #34495e;
+    color: var(--c-text);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+/* Fix the rows and borders */
+body.hard-mode td {
+    border-bottom: 1px solid #455a64;
+}
+
+/* Highlight the "Me" row with a subtle dark gold tint instead of light green */
+body.hard-mode tr.is-me {
+    background-color: rgba(243, 156, 18, 0.2); 
+    color: #fff;
+}
+
+/* Fix text colors for subtext/descriptions */
+body.hard-mode .subtext,
+body.hard-mode p {
+    color: #bdc3c7;
+}
+
+/* Fix the Date Picker input to look good on dark bg */
+body.hard-mode input[type="date"] {
+    background-color: #ecf0f1;
+    color: #2c3e50;
+    border: none;
+    border-radius: 4px;
+}
+
+/* Update the secondary buttons (Close/Guest) for contrast */
+body.hard-mode .btn-secondary {
+    background-color: #7f8c8d;
+    color: #ecf0f1;
+}
+body.hard-mode .btn-secondary:hover {
+    background-color: #95a5a6;
+}
+
+/* --- Profile Modal Styles --- */
+#profileNameInput {
+    padding: 12px;
+    font-size: 1.2rem;
+    border: 2px solid var(--c-border);
+    border-radius: 8px;
+    width: 80%;
+    max-width: 300px;
+    text-align: center;
+    margin-top: 10px;
+    font-family: inherit;
+}
+
+#profileNameInput:focus {
+    outline: none;
+    border-color: var(--c-present);
+}
+
+/* Fix for Hard Mode Input Fields */
+body.hard-mode input[type="text"],
+body.hard-mode input[type="date"] {
+    background-color: #ecf0f1;
+    color: #2c3e50;
+    border: none;
+    border-radius: 4px;
 }
