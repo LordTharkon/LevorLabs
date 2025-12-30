@@ -1,0 +1,167 @@
+:root {
+    --bg-color: #121213;
+    --board-bg: #121213;
+    --text-color: #ffffff;
+    --key-bg: #818384;
+    --key-bg-eval: #3a3a3c;
+    --border-color: #3a3a3c;
+    --correct: #538d4e;
+    --present: #b59f3b;
+    --absent: #3a3a3c;
+    --filled-border: #565758;
+}
+
+body {
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* Header */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 1rem;
+    height: 65px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.title {
+    font-weight: 800;
+    font-size: 1.5rem;
+    letter-spacing: 0.1rem;
+    text-align: center;
+}
+
+.auth-btn {
+    background: transparent;
+    border: 1px solid var(--text-color);
+    color: var(--text-color);
+    padding: 5px 10px;
+    cursor: pointer;
+    border-radius: 4px;
+    font-weight: 600;
+}
+
+.auth-btn:hover { background: rgba(255,255,255,0.1); }
+#user-info { font-size: 0.8rem; margin-right: 10px; }
+.hidden { display: none !important; }
+
+/* Date Picker styling */
+#game-date {
+    background: var(--bg-color);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+    padding: 5px;
+    border-radius: 4px;
+    font-family: inherit;
+}
+
+/* Game Board */
+#game-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    flex-grow: 1;
+    padding: 20px 0;
+    max-width: 500px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+#board {
+    display: grid;
+    grid-template-rows: repeat(6, 1fr);
+    gap: 5px;
+    padding: 10px;
+    box-sizing: border-box;
+    width: 350px;
+    height: 420px;
+}
+
+.row {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 5px;
+}
+
+.tile {
+    width: 100%;
+    height: 100%;
+    border: 2px solid var(--border-color);
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    user-select: none;
+}
+
+/* Tile States */
+.tile[data-state='filled'] {
+    border-color: var(--filled-border);
+    animation: pop 0.1s;
+}
+.tile[data-state='correct'] { background-color: var(--correct); border-color: var(--correct); }
+.tile[data-state='present'] { background-color: var(--present); border-color: var(--present); }
+.tile[data-state='absent'] { background-color: var(--absent); border-color: var(--absent); }
+.tile.flip { animation: flip 0.5s ease forwards; }
+
+/* Keyboard */
+#keyboard-container { width: 100%; padding: 0 8px; margin-bottom: 20px; }
+.keyboard-row { display: flex; justify-content: center; margin-bottom: 8px; width: 100%; }
+.key {
+    font-family: inherit;
+    font-weight: bold;
+    border: 0;
+    padding: 0;
+    margin: 0 6px 0 0;
+    height: 58px;
+    border-radius: 4px;
+    cursor: pointer;
+    user-select: none;
+    background-color: var(--key-bg);
+    color: var(--text-color);
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-transform: uppercase;
+}
+.key.wide { flex: 1.5; }
+
+/* Keyboard Colors */
+.key.correct { background-color: var(--correct); }
+.key.present { background-color: var(--present); }
+.key.absent { background-color: var(--absent); }
+
+/* Toast Message */
+#message-container {
+    height: 30px;
+    margin-bottom: 10px;
+    color: var(--text-color);
+    font-weight: bold;
+    background: #fff;
+    color: #000;
+    padding: 10px 20px;
+    border-radius: 4px;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+#message-container.show { opacity: 1; }
+
+/* Animations */
+@keyframes pop { 50% { transform: scale(1.1); } }
+@keyframes flip {
+    0% { transform: rotateX(0); border-color: var(--filled-border); }
+    50% { transform: rotateX(90deg); border-color: var(--filled-border); }
+    100% { transform: rotateX(0); }
+}
