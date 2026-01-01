@@ -49,7 +49,6 @@ try {
 function updateAuthUI() {
     const container = document.getElementById('authContainer');
     if (user) {
-        // Show name with a pencil icon, clicking opens the modal
         const name = user.displayName || 'Babe';
         container.innerHTML = `
             <span class="auth-status" onclick="openProfileModal()" title="Edit Profile">
@@ -66,7 +65,6 @@ function updateAuthUI() {
 function openProfileModal() {
     const modal = document.getElementById('profileModal');
     const input = document.getElementById('profileNameInput');
-    // Pre-fill with current name
     input.value = user.displayName || "";
     modal.classList.add('open');
 }
@@ -81,15 +79,11 @@ async function saveName() {
     }
     
     try {
-        // A. Update the Auth Profile (Local Session)
         await user.updateProfile({ displayName: newName });
-        
-        // B. Update the Database Document (For Leaderboard)
         await db.collection('users').doc(user.uid).set({
             displayName: newName
         }, { merge: true });
 
-        // C. Refresh UI
         updateAuthUI();
         document.getElementById('profileModal').classList.remove('open');
         showToast("Name Updated!");
@@ -115,16 +109,14 @@ let isGameOver = false;
 let targetWord = "";
 let gameDateStr = "";
 let isChecking = false;
-let currentMode = 'regular'; // 'regular' or 'hard'
+let currentMode = 'regular'; 
 
-// Start Game
 setGameDate(getEasternDateString(new Date()));
 
 function toggleMode() {
     const toggle = document.getElementById('modeToggle');
     currentMode = toggle.checked ? 'hard' : 'regular';
     
-    // Visual Updates
     if (currentMode === 'hard') {
         document.body.classList.add('hard-mode');
         document.getElementById('gameTitle').textContent = "Hard Mode";
@@ -133,7 +125,6 @@ function toggleMode() {
         document.getElementById('gameTitle').textContent = "Love Letters";
     }
 
-    // Reload the game for the current date with the new mode
     setGameDate(gameDateStr);
 }
 
@@ -153,7 +144,6 @@ async function setGameDate(dateStr) {
     
     document.getElementById('currentDateDisplay').textContent = "Loading...";
 
-    // --- FETCH WORD BASED ON MODE ---
     const collectionName = currentMode === 'hard' ? 'puzzles_hard' : 'puzzles';
     const fallbackList = currentMode === 'hard' ? WORD_LIST_HARD : WORD_LIST_REGULAR;
 
@@ -162,7 +152,6 @@ async function setGameDate(dateStr) {
         if (doc.exists && doc.data().word) {
             targetWord = doc.data().word.toUpperCase();
         } else {
-            // Math Fallback
             const today = new Date(dateStr);
             const diffTime = Math.abs(today - START_DATE);
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); 
@@ -173,12 +162,11 @@ async function setGameDate(dateStr) {
         targetWord = fallbackList[0]; 
     }
 
-    // Update UI
     document.getElementById('currentDateDisplay').textContent = dateStr;
     document.getElementById('datePicker').value = dateStr;
     updateArrowButtons();
     createBoard();
-    createKeyboard(); // Reset keyboard colors
+    createKeyboard(); 
     
     if(user) loadGameData();
 }
@@ -207,13 +195,18 @@ async function submitGuess() {
     currentGuess = "";
     animateRow(guesses.length - 1);
     updateKeyboardColors();
-    saveGameData();
+    
+    // 1. Save the letters immediately
+    await saveGameData(); 
 
+    // 2. Check Win/Loss and explicitly finalize stats
     if (guesses[guesses.length - 1] === targetWord) {
         isGameOver = true;
+        await finalizeGameStats(true); // <--- NEW EXPLICIT CALL
         setTimeout(() => showToast(currentMode === 'hard' ? "You're a genius! 🧠" : "I Love You! ❤️"), 1500);
     } else if (guesses.length === 6) {
         isGameOver = true;
+        await finalizeGameStats(false); // <--- NEW EXPLICIT CALL
         setTimeout(() => showToast(targetWord), 1500);
     }
     isChecking = false;
@@ -221,7 +214,6 @@ async function submitGuess() {
 
 async function checkWordValidity(word) {
     if (word === targetWord) return true;
-    // Just use API for everything to be safe
     try {
         const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
         return response.ok; 
@@ -229,42 +221,19 @@ async function checkWordValidity(word) {
 }
 
 // ==========================================
-// 4. DATA SYNC (DUAL MODE)
+// 4. DATA SYNC (DUAL MODE) -- FIX APPLIED HERE
 // ==========================================
-function saveGameData() {
-    if (!user || !db) return;
-
-    // Determine subcollection: 'history' (regular) or 'history_hard'
-    const subColl = currentMode === 'hard' ? 'history_hard' : 'history';
-    const gameRef = db.collection('users').doc(user.uid).collection(subColl).doc(gameDateStr);
-    
-    gameRef.set({
-        guesses: guesses,
-        word: targetWord,
-        solved: (guesses[guesses.length-1] === targetWord),
-        lastPlayed: firebase.firestore.FieldValue.serverTimestamp()
-    });
-
-    if (isGameOver) {
-        gameRef.get().then(doc => {
-            if (doc.exists && !doc.data().statsRecorded) {
-                updateUserStats(guesses[guesses.length-1] === targetWord);
-                gameRef.update({ statsRecorded: true });
-            }
-        });
-    }
-}
-
 function updateUserStats(isWin) {
-    const userRef = db.collection('users').doc(user.uid);
-    let updateData = { displayName: user.displayName || "Anonymous" };
+    if (!user) return Promise.resolve();
 
-    // Update specific fields based on mode
-    // Regular: totalWins, totalGames, totalGuessSum
-    // Hard: hard_wins, hard_games, hard_guessSum
-    const prefix = currentMode === 'hard' ? 'hard_' : 'regular_'; // Note: mapping 'regular' to existing 'total' fields might be cleaner, but let's be explicit
-    
-    // Compatibility: Use 'totalWins' for regular for backward compat, 'hard_wins' for hard
+    console.log(`Updating Stats | Mode: ${currentMode} | Win: ${isWin}`);
+
+    const userRef = db.collection('users').doc(user.uid);
+    let updateData = { 
+        displayName: user.displayName || "Anonymous",
+        lastActive: firebase.firestore.FieldValue.serverTimestamp()
+    };
+
     if (currentMode === 'hard') {
         updateData.hard_games = firebase.firestore.FieldValue.increment(1);
         if (isWin) {
@@ -272,7 +241,6 @@ function updateUserStats(isWin) {
             updateData.hard_guessSum = firebase.firestore.FieldValue.increment(guesses.length);
         }
     } else {
-        // Regular mode (using original field names)
         updateData.totalGames = firebase.firestore.FieldValue.increment(1);
         if (isWin) {
             updateData.totalWins = firebase.firestore.FieldValue.increment(1);
@@ -280,7 +248,52 @@ function updateUserStats(isWin) {
         }
     }
 
-    userRef.set(updateData, { merge: true });
+    return userRef.set(updateData, { merge: true });
+}
+
+// 2. Just saves the board state (Letters & Colors)
+function saveGameData() {
+    if (!user || !db) return Promise.resolve();
+
+    const subColl = currentMode === 'hard' ? 'history_hard' : 'history';
+    const gameRef = db.collection('users').doc(user.uid).collection(subColl).doc(gameDateStr);
+    
+    const isWin = guesses[guesses.length-1] === targetWord;
+
+    // We use merge: true so we don't accidentally wipe the 'statsRecorded' flag if it exists
+    return gameRef.set({
+        guesses: guesses,
+        word: targetWord,
+        solved: isWin,
+        lastPlayed: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+}
+
+// 3. New Function: Handles the Scoring Logic explicitly
+async function finalizeGameStats(isWin) {
+    if (!user || !db) return;
+
+    const subColl = currentMode === 'hard' ? 'history_hard' : 'history';
+    const gameRef = db.collection('users').doc(user.uid).collection(subColl).doc(gameDateStr);
+
+    try {
+        // Double-check: Did we already count this specific game?
+        const doc = await gameRef.get();
+        if (doc.exists && doc.data().statsRecorded) {
+            console.log("Stats already recorded for this date. Skipping.");
+            return;
+        }
+
+        // If not, update the profile stats
+        await updateUserStats(isWin);
+
+        // And mark this game as counted
+        await gameRef.set({ statsRecorded: true }, { merge: true });
+        console.log("Stats successfully recorded!");
+        
+    } catch (e) {
+        console.error("Error finalizing stats:", e);
+    }
 }
 
 function loadGameData() {
@@ -291,11 +304,13 @@ function loadGameData() {
     .then(doc => {
         if (doc.exists) {
             const data = doc.data();
-            guesses = data.guesses;
+            guesses = data.guesses || [];
             guesses.forEach((g, idx) => {
                 const rowDiv = document.getElementsByClassName('row')[idx];
-                for(let i=0; i<5; i++) rowDiv.children[i].textContent = g[i];
-                animateRow(idx);
+                if(rowDiv) {
+                    for(let i=0; i<5; i++) rowDiv.children[i].textContent = g[i];
+                    animateRow(idx);
+                }
             });
             updateKeyboardColors();
             if(data.solved || guesses.length >= 6) isGameOver = true;
@@ -303,9 +318,6 @@ function loadGameData() {
     });
 }
 
-// ==========================================
-// LEADERBOARD (Updated for Toggle)
-// ==========================================
 function toggleLeaderboard() {
     const modal = document.getElementById('leaderboardModal');
     modal.style.display = (modal.style.display === 'flex') ? 'none' : 'flex';
@@ -316,7 +328,6 @@ function fetchLeaderboard() {
     const tbody = document.querySelector('#leaderboardTable tbody');
     tbody.innerHTML = '<tr><td colspan="4" style="text-align:center">Loading...</td></tr>';
 
-    // Decide which stats to pull based on current active mode
     const sortField = currentMode === 'hard' ? 'hard_wins' : 'totalWins';
     const displayMode = currentMode === 'hard' ? "Hard Mode" : "Regular";
     document.querySelector('#leaderboardModal h2').textContent = `🏆 Leaderboard (${displayMode})`;
@@ -333,7 +344,6 @@ function fetchLeaderboard() {
             const data = doc.data();
             const name = data.displayName || "Unknown";
             
-            // Extract correct stats
             let wins, games, guessSum;
             if (currentMode === 'hard') {
                 wins = data.hard_wins || 0;
@@ -345,7 +355,7 @@ function fetchLeaderboard() {
                 guessSum = data.totalGuessSum || 0;
             }
 
-            if (games === 0) return; // Skip empty players for this mode
+            if (games === 0) return; 
 
             let average = (wins > 0) ? (guessSum / wins).toFixed(2) : "-";
             
@@ -358,10 +368,7 @@ function fetchLeaderboard() {
     });
 }
 
-// (Rest of the Visual Helpers, Keyboard, and Date Nav remain mostly same, just ensure they rely on global variables)
-// ... [Insert createBoard, updateGrid, shakeRow, animateRow, createKeyboard, updateKeyboardColors, changeDate, updateArrowButtons, toggleArchive, loadArchivedDate, showToast, listeners] ...
-
-// Helper function definitions needed for above to work (Copying condensed versions)
+// Helper function definitions...
 function updateGrid() {
     const rowDiv = document.getElementsByClassName('row')[guesses.length];
     if (!rowDiv) return;
