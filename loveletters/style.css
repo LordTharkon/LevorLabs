@@ -1,7 +1,7 @@
 :root {
     /* "Sage & Rose" Palette */
     --c-correct: #6ca965; /* Soft Green for Success */
-    --c-present: #c75c6c; /* Rose for "Warm/Present" */
+    --c-present: #f3dd12; /* Rose for "Warm/Present" */
     --c-absent:  #787c7e; /* Gray */
     --c-bg:      #f8f5f2; /* Cream Background */
     --c-text:    #333;
@@ -318,8 +318,8 @@ input:checked + .slider:before {
 body.hard-mode {
     --c-bg: #2c3e50;      /* Midnight Blue Background */
     --c-text: #ecf0f1;    /* Light Text */
-    --c-correct: #e74c3c; /* Red/Orange for Success */
-    --c-present: #f39c12; /* Gold */
+    --c-correct: #0d940d; /* Red/Orange for Success */
+    --c-present: #f3dd12; /* Gold */
     --c-absent: #7f8c8d;  /* Slate Gray */
     --c-border: #34495e;
 }
