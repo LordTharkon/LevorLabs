@@ -2,126 +2,112 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Love Letters</title>
     
-    <title>Levor Labs | Precision Calculators for Makers & Hobbyists</title>
-    <meta name="description" content="Free professional-grade calculators for makers. Formulate precise recipes for soap making, candle making, and DIY projects. Stop guessing, start engineering.">
-    <meta name="keywords" content="maker tools, soap calculator, candle calculator, hobby formulation software, DIY calculators, batch calculator">
-    <meta name="author" content="Levor Labs">
-    <link rel="canonical" href="https://levorlabs.com/">
+    <link rel="icon" type="image/svg+xml" href="icon.svg">
 
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://levorlabs.com/">
-    <meta property="og:title" content="Levor Labs - Precision Tools for Makers">
-    <meta property="og:description" content="Stop guessing. Use our free, professional-grade calculators for Candle and Soap formulation.">
-    <meta property="og:image" content="https://levorlabs.com/social-preview-main.jpg"> <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "SoftwareApplication",
-      "name": "Levor Labs Suite",
-      "operatingSystem": "Web",
-      "applicationCategory": "UtilitiesApplication",
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "USD"
-      },
-      "description": "A suite of browser-based calculation tools for hobbyist and professional makers, including soap and candle formulation."
-    }
-    </script>
+    <link rel="apple-touch-icon" href="icon.png">
+
+    <meta name="theme-color" content="#f8f5f2">
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    
-    <link rel="stylesheet" href="styles.css">
-    <link rel="icon" type="image/svg+xml" href="favicon.svg">
-</head>
-<!-- Google tag (gtag.js) -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-DYD8L47014"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
 
-  gtag('config', 'G-DYD8L47014');
-</script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="script.js" defer></script>
+</head>
 <body>
 
-<div class="background-grid"></div>
-
-<header>
-    <div class="container header-content">
-        <a href="#" class="brand">
-            <div class="brand-icon"><i class="ph-fill ph-flask"></i></div>
-            <div class="brand-text">Levor<span>Labs</span></div>
-			</a>
-        <nav>
-            <a href="/contact.html" class="nav-link">Contact  <i class="ph ph-envelope"></i> </a>
-            
-        </nav>
+<nav>
+    <div style="display:flex; gap:10px;">
+        <button class="icon-btn" onclick="toggleArchive()" title="Past Games">📅</button>
+        <button class="icon-btn" onclick="toggleLeaderboard()" title="Leaderboard">🏆</button>
     </div>
-</header>
 
-<main class="container">
-    
-    <section class="hero">
-        <h1>Formulate with <span class="text-gradient">Precision.</span></h1>
-        <p class="hero-sub">Stop guessing. Start engineering. Professional-grade calculation suites for the modern maker workshop.</p>
-    </section>
-
-    <div class="grid-label">AVAILABLE TOOLS</div>
-    
-    <div class="tool-grid">
-        
-        <a href="./soap/index.html" class="tool-card accent-blue">
-            <div class="card-header">
-                <div class="icon-box"><i class="ph-fill ph-drop"></i></div>
-                <div class="status-pill warning">In-Development</div>
-            </div>
-            <h3>Soap Formulator</h3>
-            <p>Advanced Lye (NaOH/KOH) calculator with real-time fatty acid topology and hardness predictions.</p>
-            <div class="card-footer">
-                <span>Open Tool</span>
-                <i class="ph-bold ph-arrow-right"></i>
-            </div>
-        </a>
-
-        <a href="./candle/index.html" class="tool-card accent-orange">
-            <div class="card-header">
-                <div class="icon-box"><i class="ph-fill ph-flame"></i></div>
-                <div class="status-pill success">Stable</div>
-            </div>
-            <h3>Candle Maker</h3>
-            <p>Fragrance load optimizer and wax batch calculator. Includes container volume estimation.</p>
-            <div class="card-footer">
-                <span>Open Tool</span>
-                <i class="ph-bold ph-arrow-right"></i>
-            </div>
-        </a>
-
-        <div class="tool-card disabled">
-            <div class="card-header">
-                <div class="icon-box gray"><i class="ph-fill ph-ruler"></i></div>
-                <div class="status-pill neutral">Shelved</div>
-            </div>
-            <h3>Woodshop Mate</h3>
-            <p>Equal spacing calculators, cut-list optimization, and shop utility tools.</p>
-            <div class="card-footer">
-
-            </div>
+    <div class="nav-center">
+        <div class="mode-switch-container">
+            <span class="mode-label">Hard Mode</span>
+            <label class="switch">
+                <input type="checkbox" id="modeToggle" onchange="toggleMode()">
+                <span class="slider round"></span>
+            </label>
         </div>
 
+        <div class="title" id="gameTitle">Love Letters</div>
+        
+        <div class="date-controls">
+            <button class="arrow-btn" id="prevBtn" onclick="changeDate(-1)">&#9664;</button>
+            <div class="date-display" id="currentDateDisplay">Loading...</div>
+            <button class="arrow-btn" id="nextBtn" onclick="changeDate(1)">&#9654;</button>
+        </div>
     </div>
 
-</main>
+    <div id="authContainer"></div>
+</nav>
 
-<footer>
-    <div class="container footer-content">
-        <p>&copy; 2025 Levor Labs. Built for makers.</p>
+<div id="leaderboardModal" class="modal">
+    <h2>🏆 Leaderboard</h2>
+    
+    <div class="table-container">
+        <table id="leaderboardTable">
+            <thead>
+    <tr>
+        <th>Rank</th>
+        <th>Name</th>
+        <th>Wins</th>
+        <th>Avg. Guesses</th> </tr>
+</thead>
+            <tbody>
+                <tr><td colspan="4">Loading...</td></tr>
+            </tbody>
+        </table>
     </div>
-</footer>
+
+    <button class="btn-secondary" onclick="toggleLeaderboard()">Close</button>
+</div>
+
+    <div class="game-board" id="board">
+        </div>
+
+    <div class="keyboard" id="keyboard">
+        </div>
+
+<div id="profileModal" class="modal">
+    <h2>Edit Profile 👤</h2>
+    <p>Change how your name appears on the leaderboard.</p>
+    
+    <input type="text" id="profileNameInput" placeholder="Enter display name" maxlength="15">
+    
+    <div style="display:flex; gap:10px; margin-top:20px; width: 100%; justify-content: center;">
+        <button class="btn-primary" onclick="saveName()">Save Name</button>
+        <button class="btn-secondary" onclick="logout()" style="background-color: #e74c3c; color: white;">Logout</button>
+    </div>
+
+    <button class="btn-secondary" onclick="document.getElementById('profileModal').classList.remove('open')">Close</button>
+</div>
+
+    <div id="loginModal" class="modal open">
+        <h2>Welcome, Babe! ❤️</h2>
+        <p>Sign in to save your scores.</p>
+        <button class="btn-primary" onclick="loginGoogle()">Sign in with Google</button>
+        <p class="subtext">Or just play for fun</p>
+        <button class="btn-secondary" onclick="document.getElementById('loginModal').classList.remove('open')">Play as Guest</button>
+    </div>
+
+    <div id="archiveModal" class="modal">
+        <h2>Past Love Letters</h2>
+        <p>Pick a date to play that puzzle:</p>
+        <input type="date" id="datePicker">
+        <button class="btn-primary" onclick="loadArchivedDate()">Go</button>
+        <button class="btn-secondary" onclick="toggleArchive()">Close</button>
+    </div>
+
+    <div id="toast" class="toast">Message</div>
 
 </body>
 </html>
