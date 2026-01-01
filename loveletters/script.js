@@ -24,7 +24,8 @@ const WORD_LIST_HARD = [
     "QUAFF", "PUPAL", "JUMPY", "WHELP", "XYLEM", "QUEUE", "VIXEN"
 ];
 
-const START_DATE = new Date('2025-01-01T00:00:00-05:00'); 
+const START_DATE = new Date('2026-01-01T00:00:00-05:00'); 
+const EARLIEST_DATE_STR = '2026-01-01';
 
 // ==========================================
 // 2. INIT & AUTH
@@ -164,6 +165,7 @@ async function setGameDate(dateStr) {
 
     document.getElementById('currentDateDisplay').textContent = dateStr;
     document.getElementById('datePicker').value = dateStr;
+    document.getElementById('datePicker').min = EARLIEST_DATE_STR;
     updateArrowButtons();
     createBoard();
     createKeyboard(); 
@@ -427,19 +429,94 @@ function changeDate(days) {
     const parts = gameDateStr.split('-');
     const current = new Date(parts[0], parts[1] - 1, parts[2]);
     current.setDate(current.getDate() + days);
+    
     const y = current.getFullYear();
     const m = String(current.getMonth() + 1).padStart(2, '0');
     const d = String(current.getDate()).padStart(2, '0');
     const newDateStr = `${y}-${m}-${d}`;
+    
+    // 1. Prevent Future
     if (newDateStr > getEasternDateString(new Date())) return;
+
+    // 2. Prevent Past (Before Jan 1, 2026) -> NEW CHECK
+    if (newDateStr < EARLIEST_DATE_STR) return;
+
     setGameDate(newDateStr);
 }
 function updateArrowButtons() {
     const nextBtn = document.getElementById('nextBtn');
-    if (gameDateStr >= getEasternDateString(new Date())) nextBtn.disabled = true; else nextBtn.disabled = false;
+    const prevBtn = document.getElementById('prevBtn');
+
+    // Disable Next button if today or future
+    if (gameDateStr >= getEasternDateString(new Date())) {
+        nextBtn.disabled = true;
+    } else {
+        nextBtn.disabled = false;
+    }
+
+    // Disable Prev button if at earliest date (Jan 1, 2026) -> NEW LOGIC
+    if (gameDateStr <= EARLIEST_DATE_STR) {
+        prevBtn.disabled = true;
+    } else {
+        prevBtn.disabled = false;
+    }
 }
-function toggleArchive() { const m=document.getElementById('archiveModal'); m.style.display=(m.style.display==='flex')?'none':'flex'; }
-function loadArchivedDate() { const d=document.getElementById('datePicker').value; if(d){ setGameDate(d); toggleArchive(); } }
+
+function toggleArchive() { 
+    const modal = document.getElementById('archiveModal');
+    
+    // Only run this logic if we are OPENING the modal
+    if (modal.style.display !== 'flex') {
+        const picker = document.getElementById('datePicker');
+        const todayStr = getEasternDateString(new Date());
+        
+        // 1. Block future dates in the calendar UI
+        picker.max = todayStr;
+        
+        // 2. Block dates before 2026 in the calendar UI
+        picker.min = EARLIEST_DATE_STR; // '2026-01-01'
+        
+        // 3. Set the default value to the current game date (or today if invalid)
+        if (gameDateStr >= EARLIEST_DATE_STR && gameDateStr <= todayStr) {
+            picker.value = gameDateStr;
+        } else {
+            picker.value = todayStr;
+        }
+    }
+    
+    modal.style.display = (modal.style.display === 'flex') ? 'none' : 'flex'; 
+}
+
+// ==========================================
+// 5. EVENT LISTENERS
+// ==========================================
+function loadArchivedDate() { 
+    const picker = document.getElementById('datePicker');
+    const selectedDate = picker.value; 
+    
+    if (!selectedDate) return;
+
+    const todayStr = getEasternDateString(new Date());
+
+    // RULE 1: No Future
+    if (selectedDate > todayStr) {
+        showToast("Wait for tomorrow! ⏳");
+        picker.value = todayStr; // Reset picker to valid date
+        return;
+    }
+
+    // RULE 2: No Past before 2026
+    if (selectedDate < EARLIEST_DATE_STR) {
+        showToast("Cannot go back to 2025! 🚫");
+        picker.value = EARLIEST_DATE_STR; // Reset picker to valid date
+        return;
+    }
+
+    // If valid, load the game and close modal
+    setGameDate(selectedDate); 
+    toggleArchive(); 
+}
+
 function showToast(msg) { const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 3000); }
 document.addEventListener('keydown', (e) => {
     const key = e.key;
