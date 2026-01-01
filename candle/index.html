@@ -85,8 +85,39 @@
     </button>
 </div>
 	<div class="form-group">
-        <label for="waxSelector">Wax Type</label>
-        <select id="waxSelector"></select>
+        <div class="custom-dropdown" id="waxDropdown">
+    
+    <div class="filter-section">
+        <div class="filter-group">
+            <span class="filter-label">Region:</span>
+			<div class="filter-options" id="regionFilters">
+                <button class="filter-chip active" data-filter="all">All</button>
+                <button class="filter-chip" data-filter="USA">USA</button>
+                <button class="filter-chip" data-filter="Australia">AUS</button>
+                <button class="filter-chip" data-filter="Europe">Europe</button>
+            </div>
+        </div>
+
+        <div class="filter-group" style="margin-top:8px;">
+            <span class="filter-label">Type:</span>
+            <div class="filter-options" id="typeFilters">
+                <button class="filter-chip active" data-filter="all">All</button>
+                <button class="filter-chip" data-filter="Soy">Soy</button>
+                <button class="filter-chip" data-filter="Paraffin">Paraffin</button>
+                <button class="filter-chip" data-filter="Coco">Coconut</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="dropdown-input-wrapper">
+        <i class="ph ph-magnifying-glass input-icon"></i>
+        <input type="text" id="waxSearchInput" placeholder="Search wax (e.g. 464)..." autocomplete="off">
+        <i class="ph ph-caret-down input-arrow"></i>
+    </div>
+
+    <div class="dropdown-menu hidden" id="waxOptionsList"></div>
+    <input type="hidden" id="waxSelector" value="">
+</div>
     </div>
 			
 
@@ -141,7 +172,7 @@
 
             <div class="disclaimer">
                 <i class="ph ph-info" style="vertical-align: middle; margin-right:4px;"></i> 
-                Calculated using <span id="currentSgDisplay" style="font-weight:600;">0.86</span> SG density adjustment for <span id="currentWaxName" style="font-weight:600;">Soy Wax</span>.
+                Calculated using <span id="currentSgDisplay" style="font-weight:600;">0.86</span> hot Solid Gravity density adjustment for <span id="currentWaxName" style="font-weight:600;">Soy Wax</span>. 
             </div>
         </div>
     </div>
@@ -164,18 +195,43 @@
 
 <script src="scripts.js"></script>
 
-<script>
+<script type="module">
+    // 1. IMPORT DATABASE
+    import { waxDatabase } from './waxes.js'; 
+
     // --- ELEMENT REFERENCES ---
-    // Inputs
+    
+    // Dropdown specific elements
+    const dd = {
+        container: document.getElementById('waxDropdown'),
+        search: document.getElementById('waxSearchInput'),
+        list: document.getElementById('waxOptionsList'),
+        hiddenInput: document.getElementById('waxSelector'),
+		icon: document.querySelector('.input-arrow')
+    };
+	
+	// --- HELPER: ICON TOGGLER ---
+    function setDropdownIcon(state) {
+        // State can be 'close' (X) or 'open' (Arrow)
+        if (state === 'close') {
+            dd.icon.classList.remove('ph-caret-down');
+            dd.icon.classList.add('ph-x');
+        } else {
+            dd.icon.classList.remove('ph-x');
+            dd.icon.classList.add('ph-caret-down');
+        }
+    }
+
+    // Calculator inputs
     const refs = {
         waterWeight: document.getElementById('waterWeight'),
         candleCount: document.getElementById('candleCount'),
         foSlider: document.getElementById('foSlider'),
         customSg: document.getElementById('customSg'),
-        waxSelector: document.getElementById('waxSelector')
+        customSgContainer: document.getElementById('customSgContainer')
     };
 
-    // Outputs
+    // Display outputs
     const displays = {
         fo: document.getElementById('foDisplay'),
         total: document.getElementById('totalWeightDisplay'),
@@ -187,90 +243,221 @@
         cureInfo: document.getElementById('cureTimeInfo')
     };
 
-    // --- WAX DATA ---
-    const waxData = [
-        { id: "g464", name: "Golden Brands 464", category: "Soy", sg: 0.86, meltMsg: "Heat to 185°F, Add Fragrance. Pour at 135°F (+/- 5°).", cureMsg: "Cure for 2 weeks." },
-        { id: "g444", name: "Golden Brands 444", category: "Soy", sg: 0.86, meltMsg: "Heat to 185°F, Add Fragrance. Pour at 125-135°F.", cureMsg: "Cure for 2 weeks." },
-        { id: "g415", name: "Golden Brands 415", category: "Soy", sg: 0.86, meltMsg: "Pure soy. Heat to 185°F, Add Fragrance. Pour at 140°F.", cureMsg: "Cure for 2 weeks." },
-        { id: "g402", name: "Golden Brands 402", category: "Soy", sg: 0.86, meltMsg: "Heat to 185°F, Add Fragrance. Pour around 135°F.", cureMsg: "Cure for 2 weeks." },
-        { id: "g454", name: "Golden Brands 454", category: "Coco/Soy", sg: 0.86, meltMsg: "Heat to 185°F, Add Fragrance.. Pour between 125-145°F.", cureMsg: "Cure for 1-2 weeks." },
-        { id: "nw_c6", name: "NatureWax C-6", category: "Coco/Soy", sg: 0.88, meltMsg: "Heat to 180°F, Add Fragrance.. Pour at 160°F.", cureMsg: "Cure for 1 week." },
-        { id: "igi6006", name: "IGI 6006", category: "Para-Soy", sg: 0.88, meltMsg: "Heat to 185°F, Add Fragrance. Pour at 170°F.", cureMsg: "Cure for 3-5 days." },
-        { id: "igi4627", name: "IGI 4627", category: "Paraffin", sg: 0.82, meltMsg: "Heat to 185°F, Add Fragrance. Pour at 175°F.", cureMsg: "Cure for 24-48 hours." },
-        { id: "igi4630", name: "IGI 4630", category: "Paraffin", sg: 0.82, meltMsg: "Heat to 185°F , Add Fragrance. Pour at 175°F.", cureMsg: "Cure for 24-48 hours." },
-        { id: "igi6046", name: "IGI 6046", category: "Para/Coco", sg: 0.83, meltMsg: "Heat to 190°F, Add Fragrance. Pour at 170°F.", cureMsg: "Cure for 3-5 days." },
-        { id: "pb550", name: "ProBlend 550", category: "Paraffin", sg: 0.82, meltMsg: "Heat to 190°F, Add Fragrance. Pour at 170°F.", cureMsg: "Cure for 24 hours." },
-        { id: "pb600", name: "ProBlend 600", category: "Para/Soy", sg: 0.84, meltMsg: "Heat to 185°F, Add Fragrance. Pour at 160°F.", cureMsg: "Cure for 3-5 days." },
-		{ id: "candlescience_ca", name: "CandleScience Coconut Apricot", category: "Specialty", sg: 0.86, meltMsg: "Heat to 185°F, Add Fragrance. Pour at 160°F.", cureMsg: "Cure for 48 hours." },
-		{ id: "ceda_serica", name: "Ceda Serica Coconut Apricot", category: "Coco/Apricot", sg: 0.86, meltMsg: "Heat to 200-220°F, Add Fragrance. Pour hot at 190°F (+/- 10°).", cureMsg: "Cure for 2 weeks." },
-        { id: "bees", name: "Beeswax", category: "Natural", sg: 0.86, meltMsg: "Heat to 160°F+. Add Fragrance. Pour Hot.", cureMsg: "Cure for 48 hours." },
-        { id: "custom", name: "Custom Wax", category: "User", sg: 0.86, meltMsg: "Check manufacturer instructions.", cureMsg: "Check manufacturer instructions." }
-    ];
+    // --- HELPER: TEXT TEMPERATURE CONVERTER ---
+    function formatTemp(tempObj) {
+        if (!tempObj) return "N/A";
+        return `${tempObj.f}°F (${tempObj.c}°C)`;
+    }
 
-    // --- GLOBAL UNIT LISTENER ---
-    document.addEventListener('unitChange', function(e) {
-        if (e.detail.converting) {
-            convertInput('waterWeight', 'mass');
+    // --- PART 1: DROPDOWN LOGIC ---
+	
+	const activeFilters = {
+        region: 'all',
+        type: 'all'
+    };
+
+// --- REGION MAPPING CONFIGURATION ---
+    // Maps your filter buttons to the specific 'origin' strings in waxes.js
+    const regionGroups = {
+    // USA button shows only 'USA' tagged items (plus 'Global' items by default)
+    
+    // Europe button shows UK and EU items
+    'Europe': ['UK', 'Germany/EU', 'EU', 'UK/USA', 'Germany/SA', 'UK/EU'],
+    
+    // Australia button shows Australian items AND UK items (Common Imports)
+    'Australia': ['Australia', 'UK'], 
+    
+    'Asia': ['China', 'Japan', 'China/Korea', 'Philippines'],
+    'South America': ['Brazil', 'Colombia'],
+    'Africa': ['South Africa', 'Africa']
+};
+
+    function renderDropdown(filterText = '') {
+        dd.list.innerHTML = '';
+        const term = filterText.toLowerCase();
+
+        // MASTER FILTER LOGIC
+        const matches = waxDatabase.filter(w => {
+            // 1. Text Search
+            const matchesText = w.name.toLowerCase().includes(term) || 
+                                (w.manufacturer && w.manufacturer.toLowerCase().includes(term));
+            
+            // 2. Region Filter (Updated)
+            let matchesRegion = false;
+            
+            if (activeFilters.region === 'all') {
+                matchesRegion = true;
+            } 
+            else if (w.origin === 'Global') {
+                // RULE: Global items (like Stearic Acid) show on EVERY filter
+                matchesRegion = true;
+            }
+            else if (w.origin === activeFilters.region) {
+                // Direct match (e.g. "USA" === "USA")
+                matchesRegion = true;
+            }
+            else if (regionGroups[activeFilters.region] && regionGroups[activeFilters.region].includes(w.origin)) {
+                // Group match (e.g. "Europe" matches "UK" or "Germany")
+                matchesRegion = true;
+            }
+
+            // 3. Type Filter (Smart Check)
+            const matchesType = activeFilters.type === 'all' || 
+                                w.type.toLowerCase().includes(activeFilters.type.toLowerCase());
+
+            return matchesText && matchesRegion && matchesType;
+        });
+
+        // --- SORT ALPHABETICALLY ---
+        matches.sort((a, b) => a.name.localeCompare(b.name));
+        // -
+
+        // RENDER ITEMS
+        if (matches.length > 0) {
+            matches.forEach(wax => {
+                const el = document.createElement('div');
+                el.className = 'dropdown-item';
+                // UPDATED: Removed the (${wax.origin}) text span below for a cleaner look
+                el.innerHTML = `
+                    <div class="item-name">${wax.name}</div>
+                    <div class="item-meta">
+                        <span>${wax.manufacturer || '-'}</span>
+                        <span class="type-badge">${wax.type}</span>
+                    </div>
+                `;
+                el.addEventListener('click', () => selectWax(wax));
+                dd.list.appendChild(el);
+            });
+        } else {
+            const empty = document.createElement('div');
+            empty.className = 'dropdown-item';
+            empty.style.color = '#999';
+            empty.style.cursor = 'default';
+            empty.innerText = 'No waxes found matching filters.';
+            dd.list.appendChild(empty);
         }
+
+        // Always show Custom Option
+        const customEl = document.createElement('div');
+        customEl.className = 'dropdown-item';
+        customEl.style.borderTop = '2px solid #f3f4f6';
+        customEl.innerHTML = `<div class="item-name">Custom Wax</div><div class="item-meta"><span>Enter SG manually</span></div>`;
+        customEl.addEventListener('click', () => selectWax({id: 'custom', name: 'Custom Wax'}));
+        dd.list.appendChild(customEl);
+    }
+
+    // --- SETUP FILTER LISTENERS ---
+    
+    function setupFilters(groupId, filterKey) {
+        const container = document.getElementById(groupId);
+        const buttons = container.querySelectorAll('.filter-chip');
+
+        buttons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                // 1. Visual Toggle
+                buttons.forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+
+                // 2. Update State
+                activeFilters[filterKey] = e.target.dataset.filter;
+
+                // 3. Re-render list (and show it if hidden)
+                dd.list.classList.remove('hidden');
+                renderDropdown(dd.search.value);
+            });
+        });
+    }
+
+    // Initialize listeners
+    setupFilters('regionFilters', 'region');
+    setupFilters('typeFilters', 'type');
+
+    function selectWax(wax) {
+        // Update UI
+        dd.search.value = wax.name;
+        dd.hiddenInput.value = wax.id; // Store ID for calculator
+        dd.list.classList.add('hidden'); // Close menu
+		setDropdownIcon('close');
+        
+        // Trigger Calc immediately
         calculate();
+    }
+
+// --- HANDLE THE CLICK ON THE ICON ---
+    dd.icon.addEventListener('click', (e) => {
+        e.stopPropagation(); // Prevent bubbling issues
+
+        if (dd.icon.classList.contains('ph-x')) {
+            // ACTION: CLEAR
+            dd.search.value = '';            // 1. Wipe text
+            dd.hiddenInput.value = '';       // 2. Wipe data
+            setDropdownIcon('open');         // 3. Reset icon
+            renderDropdown();                // 4. Show full list (no filter)
+            dd.list.classList.remove('hidden'); // 5. Open menu
+            calculate();                     // 6. Reset calc numbers
+            
+            // PRO TIP: We do NOT focus() here. This keeps the mobile keyboard closed
+            // so the user can just tap a new wax from the list!
+        } else {
+            // ACTION: TOGGLE MENU
+            // If menu is hidden, show it. If open, hide it.
+            if (dd.list.classList.contains('hidden')) {
+                renderDropdown(dd.search.value);
+                dd.list.classList.remove('hidden');
+            } else {
+                dd.list.classList.add('hidden');
+            }
+        }
     });
 
-    // --- INITIALIZATION ---
-    function populateWaxes() {
-        waxData.forEach(wax => {
-            const option = document.createElement('option');
-            option.value = wax.id;
-            option.textContent = `${wax.name} (${wax.category})`;
-            refs.waxSelector.appendChild(option);
-        });
-    }
+    // --- PART 2: CALCULATOR LOGIC ---
 
-    // --- HELPER: TEXT TEMPERATURE CONVERTER ---
-    function formatTempString(text) {
-        // Regex to find "185°F" or "125-135°F"
-        return text.replace(/(\d+)(?:-(\d+))?°F/g, (match, p1, p2) => {
-            const c1 = Math.round((parseInt(p1) - 32) * 5/9);
-            
-            // If there is a range (e.g., 125-135)
-            if (p2) {
-                const c2 = Math.round((parseInt(p2) - 32) * 5/9);
-                return `${match} (${c1}-${c2}°C)`;
-            }
-            
-            // If it's a single temp
-            return `${match} (${c1}°C)`;
-        });
-    }
-
-    // --- CORE LOGIC ---
     function calculate() {
         // 1. Get Inputs
         const waterWeight = parseFloat(refs.waterWeight.value) || 0;
         const count = parseFloat(refs.candleCount.value) || 0;
         const fragranceLoad = parseFloat(refs.foSlider.value) || 0;
         
-        // 2. Determine Specific Gravity
-        const selectedId = refs.waxSelector.value;
-        const selectedWax = waxData.find(w => w.id === selectedId) || waxData[0];
+        // 2. Identify Wax
+        const selectedId = dd.hiddenInput.value;
+        const selectedWax = waxDatabase.find(w => w.id === selectedId);
         
-        let sg = selectedWax.sg;
-        
-        // Handle Custom Input Visibility
-        const customSgContainer = document.getElementById('customSgContainer');
-        if (selectedId === 'custom') {
-            customSgContainer.classList.remove('hidden');
+        // 3. Set Defaults
+        let sg = 0.86; 
+        let meltMsg = "Check manufacturer instructions.";
+        let cureMsg = "Check manufacturer instructions.";
+        let waxName = "Custom Wax";
+
+        if (selectedWax) {
+            // It is a database wax
+            refs.customSgContainer.classList.add('hidden');
+            
+            // Auto-detect SG based on type if not explicitly in DB
+            if(selectedWax.type.includes('Paraffin')) sg = 0.92;
+            else if(selectedWax.type.includes('Coco')) sg = 0.88; 
+            else sg = 0.86; // Soy default
+
+            waxName = selectedWax.name;
+            if(selectedWax.meta) {
+                meltMsg = `Heat to ${formatTemp(selectedWax.meta.heatTo)}. Pour at ${formatTemp(selectedWax.meta.pourAt)}.`;
+                cureMsg = `Cure time: ${selectedWax.meta.cureTime}.`;
+            }
+            
+        } else if (selectedId === 'custom') {
+            // It is Custom Mode
+            refs.customSgContainer.classList.remove('hidden');
             sg = parseFloat(refs.customSg.value) || 0.86;
-        } else {
-            customSgContainer.classList.add('hidden');
         }
 
-        // 3. Main Math (Unit Agnostic)
+        // 4. Do The Math
         const totalBatchWeight = waterWeight * sg * count;
         const waxWeight = totalBatchWeight / (1 + (fragranceLoad / 100));
         const foWeight = totalBatchWeight - waxWeight;
 
-        // 4. Update Result Text
-        const decimals = globalUnit === 'imperial' ? 2 : 1;
+        // 5. Update Display
+        // Check globalUnit variable (from scripts.js)
+        const isMetric = (typeof globalUnit !== 'undefined' && globalUnit === 'metric');
+        const decimals = isMetric ? 1 : 2;
         
         displays.fo.textContent = fragranceLoad + "%";
         displays.total.textContent = totalBatchWeight.toFixed(decimals);
@@ -278,44 +465,73 @@
         displays.foNeed.textContent = foWeight.toFixed(decimals);
         
         displays.sg.textContent = sg;
-        displays.waxName.textContent = selectedWax.name;
-
-        // 5. Update Info Cards (With Temp Conversion)
-        displays.meltInfo.textContent = formatTempString(selectedWax.meltMsg);
-        displays.cureInfo.textContent = selectedWax.cureMsg;
+        displays.waxName.textContent = waxName;
+        displays.meltInfo.textContent = meltMsg;
+        displays.cureInfo.textContent = cureMsg;
     }
 
-    // --- EVENT LISTENERS ---
-    Object.values(refs).forEach(el => {
+    // --- PART 3: EVENT LISTENERS ---
+
+dd.search.addEventListener('click', () => {
+        // If the menu is hidden, show it!
+        if (dd.list.classList.contains('hidden')) {
+            renderDropdown(dd.search.value); // Render current results
+            dd.list.classList.remove('hidden'); // Show the list
+            
+            // If the box isn't empty, ensure the icon shows 'X'
+            if (dd.search.value !== '') {
+                setDropdownIcon('close');
+            }
+        }
+    });
+
+    // Dropdown Interactions
+    dd.search.addEventListener('input', (e) => {
+        if (e.target.value === '') {
+            setDropdownIcon('open');
+        }
+        renderDropdown(e.target.value);
+        dd.list.classList.remove('hidden');
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!dd.container.contains(e.target)) {
+            dd.list.classList.add('hidden');
+        }
+    });
+
+    // Calculator Inputs (Recalculate on any change)
+    const inputElements = [refs.waterWeight, refs.candleCount, refs.foSlider, refs.customSg];
+    inputElements.forEach(el => {
         el.addEventListener('input', calculate);
         el.addEventListener('change', calculate);
     });
 
-    // --- STARTUP ---
-    populateWaxes();
-    
-    // If loading in metric mode with pre-filled data, convert it
-    if(globalUnit === 'metric' && refs.waterWeight.value) {
-        convertInput('waterWeight', 'mass');
-    }
-    
-    calculate();
-	
-	
-	// Sync the text labels between Desktop and Mobile buttons
-    document.addEventListener('click', function(e) {
-        // Check if ANY unit button was clicked
-        if (e.target.closest('.global-unit-btn')) {
-            setTimeout(() => {
-                // 1. Get the text from the main button (which the logic updates)
-                const mainLabel = document.getElementById('global-unit-label').textContent;
-                
-                // 2. Copy that text to the mobile button
-                const mobileLabel = document.querySelector('.mobile-unit-text');
-                if(mobileLabel) mobileLabel.textContent = mainLabel;
-            }, 50); // Small delay to let the calculation logic finish first
+    // Global Unit Switch Listener (from scripts.js)
+    document.addEventListener('unitChange', function(e) {
+        if (e.detail.converting) {
+            if(window.convertInput) convertInput('waterWeight', 'mass');
         }
+        calculate();
     });
+
+   // --- STARTUP ---
+    
+    // Check if we need initial unit conversion (if page loads in Metric mode)
+    if(typeof globalUnit !== 'undefined' && globalUnit === 'metric' && refs.waterWeight.value) {
+        if(window.convertInput) convertInput('waterWeight', 'mass');
+    }
+
+    // FIX: Do NOT auto-select a wax. 
+    // Just run calculate() once to zero out the numbers.
+    // The dropdown input will remain empty (showing the placeholder).
+    calculate();
+
+    // Initial check for metric mode
+    if(typeof globalUnit !== 'undefined' && globalUnit === 'metric' && refs.waterWeight.value) {
+        if(window.convertInput) convertInput('waterWeight', 'mass');
+    }
 </script>
 
 <script src="footer.js"></script>
@@ -328,6 +544,4 @@
 
 
 
-
 </html>
-

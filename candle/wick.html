@@ -342,7 +342,7 @@
             isDouble = true;
             // The "Half-Diameter Strategy":
             // Treat a 4" jar as two 2" jars side-by-side.
-            dia = dia / 2; 
+            dia = (dia / 2) + 0.25; 
         }
 
         // 3. LOGIC TREE (Using the potentially halved 'dia')
