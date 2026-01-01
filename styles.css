@@ -113,6 +113,23 @@ header {
 }
 .nav-link:hover { color: var(--text-main); }
 
+/* --- NEW PURPLE THEME for Pricing Lab --- */
+:root {
+    /* Add this variable to your root block if you want, 
+       or just use the hex code below */
+    --accent-purple: #9333ea; 
+}
+
+.accent-purple .icon-box { 
+    background: #f3e8ff; 
+    color: #9333ea; 
+}
+
+.accent-purple .card-footer { 
+    color: #9333ea; 
+}
+
+
 /* --- HERO SECTION --- */
 .hero {
     text-align: center;
