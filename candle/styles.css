@@ -726,3 +726,415 @@ input[type=range]::-moz-range-track {
         display: flex !important;
     }
 }
+
+/* --- CUSTOM SEARCHABLE DROPDOWN --- */
+.custom-dropdown {
+    position: relative;
+    width: 100%;
+}
+
+.dropdown-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+/* The input needs padding for the icon */
+.dropdown-input-wrapper input {
+    width: 100%;
+    padding-left: 38px; /* Space for search icon */
+    padding-right: 30px; /* Space for arrow */
+    cursor: pointer;
+    background: #fff;
+}
+
+.input-icon {
+    position: absolute;
+    left: 12px;
+    color: var(--text-light);
+    pointer-events: none;
+    font-size: 1.1rem;
+}
+
+.input-arrow {
+    position: absolute;
+    right: 12px;
+    color: var(--text-light);
+    
+    /* NEW: Enable clicking and make it a larger touch target */
+    pointer-events: auto; 
+    cursor: pointer;
+    padding: 8px; /* Makes it easier to tap on mobile */
+    margin-right: -8px; /* Offsets the padding so it stays aligned */
+    z-index: 10;
+    transition: color 0.2s;
+}
+
+.input-arrow:hover {
+    color: var(--primary);
+}
+
+/* The Popup Menu */
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid var(--primary); /* Highlight border when open */
+    border-radius: 8px;
+    margin-top: 6px;
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 100;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    display: block; /* Default display state */
+}
+
+/* Logic to hide it */
+.dropdown-menu.hidden {
+    display: none;
+}
+
+/* Individual Items */
+.dropdown-item {
+    padding: 12px 16px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column; /* Stack name and type */
+    border-bottom: 1px solid #f3f4f6;
+    transition: background 0.1s;
+}
+
+.dropdown-item:last-child { border-bottom: none; }
+.dropdown-item:hover { background-color: var(--primary-light); }
+
+.item-name {
+    font-weight: 600;
+    color: var(--text-dark);
+    font-size: 0.95rem;
+}
+
+.item-meta {
+    font-size: 0.75rem;
+    color: var(--text-med);
+    display: flex;
+    justify-content: space-between;
+    margin-top: 2px;
+}
+
+/* Small badge for the wax type */
+.type-badge {
+    text-transform: uppercase;
+    font-weight: 700;
+    font-size: 0.65rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: #e5e7eb;
+    color: #6b7280;
+}
+
+/* --- FILTER STYLES --- */
+.filter-section {
+    background: #f9fafb;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-bottom: none; /* Connects visually to input below */
+    border-radius: 8px 8px 0 0;
+}
+
+/* Adjust the input wrapper to connect with the filters above */
+.dropdown-input-wrapper input {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+}
+
+.filter-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.filter-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-light);
+    width: 50px; /* Fixed width for alignment */
+    flex-shrink: 0;
+}
+
+.filter-options {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.filter-chip {
+    background: white;
+    border: 1px solid var(--border);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text-med);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.filter-chip:hover {
+    border-color: var(--primary);
+    color: var(--primary);
+}
+
+.filter-chip.active {
+    background: var(--primary-light);
+    border-color: var(--primary);
+    color: var(--primary);
+    font-weight: 700;
+}
+
+/* --- MOBILE FILTER OPTIMIZATION --- */
+@media (max-width: 768px) {
+    
+    /* 1. Stack the Label above the Chips to save width */
+    .filter-group {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+        margin-bottom: 12px; /* Give breathing room between rows */
+    }
+
+    /* 2. Make the Label small and subtle */
+    .filter-label {
+        font-size: 0.7rem;
+        width: 100%;
+        margin-left: 4px;
+        opacity: 0.8;
+    }
+
+    /* 3. Turn the buttons into a horizontal "Swipe" list */
+    .filter-options {
+        display: flex;
+        width: 100%;
+        overflow-x: auto; /* Enables the swipe interaction */
+        padding-bottom: 4px; /* Space for touch interaction */
+        gap: 8px; /* Space between chips */
+        
+        /* Smooth scrolling on iOS */
+        -webkit-overflow-scrolling: touch; 
+        
+        /* Hide the ugly scrollbar */
+        scrollbar-width: none;  /* Firefox */
+        -ms-overflow-style: none;  /* IE/Edge */
+    }
+    
+    /* Hide scrollbar for Chrome/Safari */
+    .filter-options::-webkit-scrollbar { 
+        display: none; 
+    }
+
+    /* 4. Prevent chips from squishing */
+    .filter-chip {
+        flex-shrink: 0; /* Crucial: stops buttons from shrinking */
+        padding: 6px 14px; /* Larger touch target for thumbs */
+        font-size: 0.85rem; /* Readable text size */
+    }
+
+    /* 5. Fix the Dropdown Menu height for mobile keyboards */
+    /* When keyboard is open, 300px is too tall. We use viewport height units. */
+    .dropdown-menu {
+        max-height: 40vh; 
+    }
+}
+
+/* --- LABEL CREATOR V2 STYLES --- */
+
+.label-editor-grid {
+    display: grid;
+    grid-template-columns: 350px 1fr;
+    gap: 30px;
+    align-items: start;
+}
+
+/* MOBILE OPTIMIZATION */
+@media (max-width: 900px) {
+    .label-editor-grid { 
+        display: flex;
+        flex-direction: column-reverse; /* Preview on TOP, Controls on BOTTOM */
+    }
+    
+    .control-panel {
+        position: static; /* No sticky on mobile */
+        max-height: none;
+        width: 100%;
+        z-index: 2;
+    }
+
+    .label-stage {
+        padding: 20px 10px; /* Smaller padding */
+        min-height: 400px;
+        width: 100%;
+    }
+    
+    /* Ensure label fits on small screens by allowing scroll if needed, 
+       though flexible layout handles most standard sizes */
+    .candle-label {
+        transform-origin: center;
+    }
+}
+
+.control-panel {
+    background: #fff;
+    padding: 25px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    /* 
+       REMOVED: position: sticky, top, max-height, overflow-y 
+       This eliminates the second scrollbar and lets the sidebar grow naturally.
+    */
+}
+
+.control-section {
+    margin-bottom: 25px;
+    padding-bottom: 25px;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.label-stage {
+    background-color: #e5e7eb;
+    border-radius: var(--radius);
+    padding: 40px;
+    min-height: 600px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    user-select: none;
+}
+
+/* --- THE LABEL --- */
+.candle-label {
+    background: white;
+    position: relative;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    overflow: hidden;
+    box-sizing: border-box;
+    transition: width 0.3s, height 0.3s;
+}
+
+.candle-label.is-round { border-radius: 50%; }
+
+/* --- DRAGGABLE ELEMENTS --- */
+.cl-logo {
+    position: absolute;
+    top: 20%; 
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 20;
+    cursor: grab;
+    border: 1px dashed transparent;
+}
+
+.cl-logo:hover { border-color: #ccc; }
+.cl-logo:active { cursor: grabbing; border-color: var(--primary); }
+
+.cl-logo img { 
+    display: block;
+    width: 100px;
+    height: auto;
+    object-fit: contain; 
+    pointer-events: none; 
+}
+
+/* TEXT: Draggable Y (Vertical) only */
+.cl-text-block {
+    position: absolute;
+    left: 0; 
+    width: 100%;
+    text-align: center;
+    cursor: ns-resize;
+    z-index: 10;
+    padding: 2px 0.125in; 
+    box-sizing: border-box;
+    border: 1px dashed transparent;
+}
+
+.candle-label.is-round .cl-text-block { padding: 2px 0.5in; }
+
+.cl-text-block:hover { border-color: #eee; background: rgba(0,0,0,0.02); }
+.cl-text-block:active { cursor: grabbing; border-color: var(--primary); }
+
+/* Initial Positions */
+#renderBrand { top: 10%; }
+#renderScent { top: 35%; }
+#renderDetails { top: 80%; }
+
+/* Typography */
+.cl-brand { font-weight: 700; text-transform: uppercase; letter-spacing: 1px; line-height: 1.2; }
+.cl-scent { font-weight: 400; font-size: 1.4em; line-height: 1.1; }
+.cl-details { font-size: 0.7em; opacity: 0.8; }
+
+/* Decorative border */
+.cl-border {
+    position: absolute;
+    top: 0.125in; left: 0.125in; right: 0.125in; bottom: 0.125in;
+    border: 2px solid #000;
+    pointer-events: none;
+    z-index: 1;
+}
+.candle-label.is-round .cl-border { border-radius: 50%; }
+
+/* --- LABEL SIDEBAR HELPERS --- */
+.control-group {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 15px;
+}
+
+.control-group label {
+    font-size: 0.75rem;
+    color: var(--text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 6px;
+}
+
+.tool-row { display: flex; gap: 6px; margin-top: 8px; align-items: center; }
+.tool-input-sm { width: 50px; padding: 8px 4px; text-align: center; font-size: 0.85rem; }
+.tool-color { flex: 0 0 36px; height: 36px; padding: 0; border: 1px solid var(--border); border-radius: 4px; cursor: pointer; }
+
+.btn-style {
+    flex: 0 0 36px;
+    height: 36px;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    cursor: pointer;
+    color: var(--text-med);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    transition: all 0.2s;
+}
+.btn-style:hover { background: #f3f4f6; }
+.btn-style.active { background: var(--primary-light); color: var(--primary); border-color: var(--primary); }
+
+/* --- PRINT SINGLE LABEL --- */
+@media print {
+    header, .page-header, .control-panel, .footer, .mobile-toggle, .global-unit-btn, .beta-banner { display: none !important; }
+    
+    body, .container, .label-stage { 
+        background: white; margin: 0; padding: 0; border: none; height: 100vh; width: 100vw;
+        display: flex; align-items: center; justify-content: center;
+    }
+    .label-editor-grid { display: block; }
+    .candle-label { box-shadow: none !important; border: 1px solid #ddd; }
+    #dimDisplay { display: none; }
+    .cl-logo, .cl-text-block { border: none !important; background: transparent !important; }
+}
