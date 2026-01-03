@@ -105,7 +105,7 @@
             <i class="ph ph-fire"></i> Wick Finder
         </a>
 
-        <a href="burn.html" class="nav-link">
+        <a href="burn.html" class="nav-link active">
             <i class="ph ph-timer"></i> Burn Rate
         </a>
 
@@ -113,7 +113,9 @@
             <i class="ph ph-book-open"></i> Wax Guide
         </a>
 		
-		<a href="../index.html" class="nav-link"> <i class="ph ph-flask"></i> LevorLabs</a>
+		<a href="label.html" class="nav-link">
+            <i class="ph ph-tag"></i> Label Creator
+        </a>
     </nav>
 </header>
 
@@ -212,8 +214,8 @@
     const analysisText = document.getElementById('analysisText');
     const targetRange = document.getElementById('targetRange');
 
-    
-document.addEventListener('unitChange', function(e) {
+    // --- GLOBAL UNIT LISTENER ---
+    document.addEventListener('unitChange', function(e) {
         if (e.detail.converting) {
             convertInput('weightStart', 'mass');
             convertInput('weightEnd', 'mass');
@@ -225,54 +227,14 @@ document.addEventListener('unitChange', function(e) {
 
     function updateRangeText() {
         const target = document.getElementById('targetRange');
-        if(globalUnit === 'imperial') {
+        // Check globalUnit variable from scripts.js
+        if(typeof globalUnit !== 'undefined' && globalUnit === 'imperial') {
             target.textContent = "0.15 - 0.25";
         } else {
             target.textContent = "4.25 - 7.0";
         }
     }
 
-    function calculate() {
-        const start = parseFloat(document.getElementById('weightStart').value) || 0;
-        const end = parseFloat(document.getElementById('weightEnd').value) || 0;
-        const hours = parseFloat(document.getElementById('duration').value) || 0;
-        const totalWax = parseFloat(document.getElementById('netWeight').value) || 0;
-
-        if (start > 0 && end > 0 && hours > 0) {
-            const consumed = start - end;
-            const rate = consumed / hours;
-            
-            // Display Logic
-            const decimals = globalUnit === 'imperial' ? 3 : 1;
-            document.getElementById('rateDisplay').textContent = rate.toFixed(decimals);
-            
-            if (totalWax > 0) {
-                document.getElementById('totalLifeDisplay').textContent = (totalWax / rate).toFixed(1);
-            }
-
-            // Analysis (Convert to Oz for logic comparison)
-            const rateInOz = globalUnit === 'metric' ? (rate / 28.3495) : rate;
-            let msg = "<b>Optimal Range.</b>";
-            if (rateInOz < 0.1) msg = "<b>Burn is very slow.</b> Use a larger wick.";
-            if (rateInOz > 0.3) msg = "<b>Burn is very hot.</b> Try a smaller wick.";
-            document.getElementById('analysisText').innerHTML = msg;
-        }
-    }
-
-    // Attach listeners
-    ['weightStart', 'weightEnd', 'duration', 'netWeight'].forEach(id => {
-        document.getElementById(id).addEventListener('input', calculate);
-    });
-
-    // Init
-    if(globalUnit === 'metric') {
-        // Convert any default values if they exist
-        convertInput('weightStart', 'mass'); 
-        // ... etc
-    }
-    updateRangeText();
-
-    // --- FUNCTION: ADJUST TIME BUTTONS ---
     function adjustTime(delta) {
         let val = parseFloat(duration.value) || 0;
         val += delta;
@@ -281,7 +243,6 @@ document.addEventListener('unitChange', function(e) {
         calculate();
     }
 
-    // --- FUNCTION: MAIN CALCULATION ---
     function calculate() {
         const start = parseFloat(weightStart.value) || 0;
         const end = parseFloat(weightEnd.value) || 0;
@@ -291,7 +252,6 @@ document.addEventListener('unitChange', function(e) {
         if (start > 0 && end > 0 && hours > 0) {
             const consumed = start - end;
             
-            // Safety check
             if (consumed < 0) {
                 rateDisplay.textContent = "Error";
                 analysisText.textContent = "Ending weight cannot be higher than starting weight.";
@@ -300,8 +260,11 @@ document.addEventListener('unitChange', function(e) {
 
             const rate = consumed / hours;
             
-            // Display Rate (3 decimals for oz, 1 decimal for g)
-            rateDisplay.textContent = rate.toFixed(currentUnit === 'oz' ? 3 : 1);
+            // Determine decimals based on globalUnit
+            const isMetric = (typeof globalUnit !== 'undefined' && globalUnit === 'metric');
+            const decimals = isMetric ? 1 : 3;
+            
+            rateDisplay.textContent = rate.toFixed(decimals);
 
             // Calculate Total Life
             if (totalWax > 0) {
@@ -312,12 +275,12 @@ document.addEventListener('unitChange', function(e) {
             }
 
             // --- ANALYSIS LOGIC ---
-            // We convert the current rate back to Oz just for the comparison logic
-            const rateInOz = currentUnit === 'g' ? (rate / 28.3495) : rate;
+            // Convert to Oz for consistent logic check
+            const rateInOz = isMetric ? (rate / 28.3495) : rate;
 
             let msg = "";
             if (rateInOz < 0.1) {
-                msg = "<b>Burn is very slow.</b> Use a larger wick or a specific gravity adjustment.";
+                msg = "<b>Burn is very slow.</b> Use a larger wick or check for clogging.";
             } else if (rateInOz > 0.3) {
                 msg = "<b>Burn is very hot.</b> Try a smaller wick series to extend life.";
             } else {
@@ -326,7 +289,6 @@ document.addEventListener('unitChange', function(e) {
             analysisText.innerHTML = msg;
 
         } else {
-            // Reset if inputs are empty
             rateDisplay.textContent = "0.00";
             totalLifeDisplay.textContent = "0";
             analysisText.textContent = "Enter Start and End weights to analyze.";
@@ -338,9 +300,9 @@ document.addEventListener('unitChange', function(e) {
     weightEnd.addEventListener('input', calculate);
     duration.addEventListener('input', calculate);
     netWeight.addEventListener('input', calculate);
-	
-	
-	
+
+    // Initial Setup
+    updateRangeText();
 </script>
 <script src="footer.js"></script>
 </body>

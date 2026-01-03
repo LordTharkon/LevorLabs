@@ -519,6 +519,41 @@ input[type=range]::-moz-range-track {
     }
 }
 
+/* --- CUSTOM FILE INPUT STYLING --- */
+
+/* Style the container slightly to align text */
+#logoUpload {
+    padding: 6px; /* Give the text some room */
+    background: #FAFAFA;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    width: 100%;
+    color: var(--text-light); /* Color of 'No file chosen' text */
+    cursor: pointer;
+}
+
+/* Style the actual button inside the input */
+#logoUpload::file-selector-button {
+    background-color: white;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 12px;
+    margin-right: 12px;
+    color: var(--text-med);
+    font-weight: 600;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+/* Hover Effect */
+#logoUpload:hover::file-selector-button {
+    background-color: var(--primary-light);
+    color: var(--primary);
+    border-color: var(--primary);
+}
+
 /* Tool Specific Styles */
         .preview-area {
             background-color: #f3f4f6; /* slightly darker than white for contrast */
