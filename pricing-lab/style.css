@@ -1,0 +1,346 @@
+:root {
+    --primary: #5b4dd4;
+    --primary-light: #efedfd;
+    --text-main: #1f2937;
+    --text-sub: #6b7280;
+    --bg-page: #f9fafb;
+    --bg-card: #ffffff;
+    --border: #e5e7eb;
+    --dark-card-bg: #111827; 
+    --success: #10b981; 
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background-color: var(--bg-page);
+    color: var(--text-main);
+    margin: 0;
+    padding: 0;
+}
+
+/* --- Shared Components --- */
+.mode-toggle-container { display: flex; align-items: center; justify-content: flex-end; gap: 10px; }
+.mode-label { font-weight: 600; font-size: 0.85rem; color: var(--text-main); }
+.switch { position: relative; display: inline-block; width: 40px; height: 22px; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #e5e7eb; transition: .4s; border-radius: 34px; }
+.slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+input:checked + .slider { background-color: var(--primary); }
+input:checked + .slider:before { transform: translateX(18px); }
+
+/* --- Navigation --- */
+header {
+    padding: 20px 0;
+    border-bottom: 1px solid var(--border);
+    background: rgba(255,255,255,0.7);
+    backdrop-filter: blur(10px);
+    position: sticky;
+    top: 0;
+    z-index: 100; /* High Z-index so it sits above scrolling content */
+    margin-bottom: 20px;
+}
+
+.header-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 0 auto;
+    padding: 0 20px; /* Ensure padding on small screens */
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: var(--text-main);
+}
+
+.brand-icon {
+    width: 36px;
+    height: 36px;
+    background: var(--text-main);
+    color: white;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+
+.brand-text {
+    font-weight: 700;
+    font-size: 1.2rem;
+    letter-spacing: -0.5px;
+}
+
+.brand-text span {
+    opacity: 0.5;
+    font-weight: 400;
+}
+
+.nav-link {
+    text-decoration: none;
+    color: var(--text-sub);
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-left: 20px;
+    transition: color 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.nav-link:hover {
+    color: var(--text-main);
+}
+
+/* --- Selection Grid --- */
+#selectionView { padding: 40px 20px; }
+.hero { text-align: center; margin-bottom: 40px; }
+.search-container { position: relative; max-width: 600px; margin: 20px auto 0; }
+.search-input { width: 100%; padding: 18px 24px 18px 50px; border-radius: 12px; border: 1px solid var(--border); font-size: 1rem; outline: none; box-shadow: 0 4px 20px rgba(91, 77, 212, 0.1); box-sizing: border-box; }
+.search-icon { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); color: #9ca3af; }
+
+.grid-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; max-width: 1200px; margin: 0 auto; }
+.card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
+.card:hover { transform: translateY(-4px); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); border-color: #dbeafe; }
+.tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 15px; }
+.tag { background: #f3f4f6; color: #4b5563; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 500; }
+
+/* --- Calculator Layout --- */
+#calculatorView { display: none; max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
+.back-link { cursor: pointer; color: var(--text-sub); display: flex; align-items: center; gap: 5px; margin-bottom: 20px; font-weight: 500; transition: color 0.2s; }
+.back-link:hover { color: var(--primary); }
+
+.calc-layout { display: grid; grid-template-columns: 1.5fr 1fr; gap: 40px; align-items: start; }
+.section-card { background: white; border: 1px solid var(--border); border-radius: 12px; padding: 25px; margin-bottom: 25px; }
+.section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+.header-title { display: flex; align-items: center; gap: 10px; font-size: 1.1rem; font-weight: 700; }
+.step-num { 
+    background: var(--primary-light); 
+    color: var(--primary); 
+    width: 28px; 
+    height: 28px; 
+    border-radius: 6px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    font-size: 0.9rem; 
+    font-weight: 700; 
+}
+
+.background-grid {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1; /* Puts it behind everything else */
+    
+    /* The "Dots" Pattern */
+    background-image: radial-gradient(#CBD5E1 1px, transparent 1px);
+    background-size: 24px 24px; 
+    
+    /* Fades out at the bottom */
+    opacity: 0.6;
+    mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, black 40%, transparent 100%);
+    pointer-events: none; /* Ensures you can click through it */
+}
+/* --- THE "TOWER" INPUT ROW STYLES --- */
+.input-row {
+    display: grid;
+    /* Grid: Label (Fill Space) | Cost (120px) | Qty (110px) | Total (80px) */
+    grid-template-columns: 1fr 130px 120px 90px;
+    gap: 15px;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #f3f4f6;
+}
+.input-row:last-child { border-bottom: none; }
+
+.row-label { font-size: 0.9rem; font-weight: 500; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
+.adv-badge { font-size: 0.65rem; color: var(--primary); background: var(--primary-light); padding: 2px 6px; border-radius: 4px; font-weight: 700; white-space: nowrap; }
+
+/* Input Wrappers */
+.input-wrapper {
+    display: flex;
+    align-items: center;
+    background: #f9fafb; /* CHANGE: Light gray background instead of white */
+    border: 1px solid #e5e7eb; 
+    border-radius: 8px; /* Slightly rounder */
+    padding: 0 12px; /* More breathing room */
+    height: 42px; /* Slightly taller for modern feel */
+    transition: all 0.2s ease;
+}
+.input-wrapper:focus-within {
+    background: #ffffff;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(91, 77, 212, 0.1); /* Soft purple halo */
+}
+.input-wrapper input { width: 100%; border: none; outline: none; font-size: 0.9rem; font-weight: 500; background: transparent; text-align: center; }
+/* Chrome, Safari, Edge, Opera - Hide arrows */
+.input-wrapper input::-webkit-outer-spin-button, .input-wrapper input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.input-wrapper span { font-size: 0.75rem; color: #9ca3af; user-select: none; white-space: nowrap; }
+.row-total { text-align: right; font-weight: 700; color: var(--text-main); font-size: 0.95rem; }
+
+/* Sub-headers for the grid columns */
+.tower-header { display: grid; grid-template-columns: 1fr 130px 120px 90px; gap: 15px; margin-bottom: 10px; padding-bottom: 5px; border-bottom: 2px solid #f3f4f6; }
+.col-header { font-size: 0.7rem; font-weight: 700; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.05em; }
+
+/* --- Summary Card --- */
+.summary-card { background: var(--dark-card-bg); color: white; border-radius: 16px; padding: 30px; position: sticky; top: 20px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
+.big-price { font-size: 3rem; font-weight: 800; line-height: 1; margin-top: 5px; }
+.summary-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 0.9rem; }
+.summary-row.profit {
+    color: #10b981; /* Keep the green text */
+    background: rgba(16, 185, 129, 0.1); /* Very faint green background */
+    padding: 12px 15px; /* Add padding inside the highlight */
+    margin: 10px -15px; /* Negative margin to pull it to the edges of the card */
+    border-radius: 8px;
+    border-bottom: none;
+    align-items: center; /* Vertically center */
+}
+
+.summary-row.profit span:last-child {
+    font-size: 1.2rem; /* Make the $ amount bigger */
+    font-weight: 800;
+}
+
+/* Chart */
+.chart-container { display: flex; justify-content: center; margin: 30px 0; }
+.doughnut { width: 140px; height: 140px; border-radius: 50%; background: conic-gradient(var(--primary) 0% 30%, var(--text-sub) 30% 40%, var(--success) 40% 100%); position: relative; }
+.doughnut::after { content: ""; position: absolute; width: 100px; height: 100px; background: var(--dark-card-bg); border-radius: 50%; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+
+/* Slider & Mobile */
+input[type=range] { width: 100%; cursor: pointer; accent-color: var(--success); margin-top: 10px; }
+@media (max-width: 900px) {
+    .calc-layout { grid-template-columns: 1fr; }
+    .summary-card { position: static; order: 1; margin-bottom: 30px; }
+    /* Collapse grid on mobile */
+    .tower-header { display: none; }
+    .input-row { grid-template-columns: 1fr 1fr; grid-template-rows: auto auto; gap: 10px; }
+    .row-label { grid-column: 1 / -1; margin-bottom: 5px; }
+    .row-total { grid-column: 1 / -1; text-align: left; background: #f9fafb; padding: 8px; border-radius: 6px; margin-top: 5px; display:flex; justify-content:space-between; }
+    .row-total::before { content: "Total:"; font-weight: 400; color: #6b7280; }
+}
+
+.hero h1 {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+    background: linear-gradient(135deg, var(--text-main) 0%, #4b5563 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.hero p {
+    color: var(--text-sub);
+    font-size: 1.1rem;
+    margin-bottom: 30px;
+}
+
+/* --- COMING SOON CARDS --- */
+.card.coming-soon {
+    opacity: 0.7;
+    background: #f3f4f6;
+    border-style: dashed;
+    cursor: default;
+    position: relative;
+    overflow: hidden;
+}
+
+.card.coming-soon:hover {
+    transform: none;
+    box-shadow: none;
+    border-color: var(--border);
+}
+
+.badge-soon {
+    display: inline-block;
+    background: #e5e7eb;
+    color: #6b7280;
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+
+/* Empty State (Hidden by default) */
+#noResults {
+    display: none;
+    text-align: center;
+    color: var(--text-sub);
+    margin-top: 40px;
+    grid-column: 1 / -1; /* Spans full width of grid */
+}
+
+.category-header {
+    /* TYPOGRAPHY */
+    font-size: 0.85rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--primary); /* Purple text to match brand */
+
+    /* BOX MODEL */
+    background-color: var(--primary-light); /* Light purple background */
+    padding: 10px 15px;
+    border-radius: 8px; /* Smooth corners */
+    
+    /* SPACING */
+    margin-top: 30px; /* Push it away from the previous section */
+    margin-bottom: 15px; /* Space between header and first item */
+    
+    /* VISUAL ACCENT */
+    border-left: 5px solid var(--primary); /* A solid left bar to anchor the eye */
+    display: flex;
+    align-items: center;
+}
+
+/* Ensure the first category header doesn't have extra top margin */
+.category-header:first-of-type {
+    margin-top: 10px;
+}
+
+.row-hidden {
+    display: none !important;
+}
+
+
+/* 1. The Track: Thin and Neutral */
+#profitMargin {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 6px; /* Much thinner (was 12px) */
+    border-radius: 3px;
+    background: #e5e7eb; /* Solid light gray */
+    outline: none;
+    margin: 25px 0 15px 0; /* Good spacing */
+    cursor: pointer;
+}
+
+/* 2. The Handle: Clean, White, with Green Accent */
+#profitMargin::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%; 
+    background: #ffffff; /* White center */
+    border: 2px solid var(--success); /* Green ring matches your "Profit" theme */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); /* Soft shadow for depth */
+    transition: transform 0.2s, box-shadow 0.2s;
+    
+    /* Center the handle vertically on the thin track */
+    /* (Thumb Height 24px - Track Height 6px) / 2 = 9px offset */
+    margin-top: 0px; 
+}
+
+/* 3. Interaction: Hover Effect */
+#profitMargin:hover::-webkit-slider-thumb {
+    transform: scale(1.1);
+    box-shadow: 0 6px 10px -2px rgba(16, 185, 129, 0.3); /* Green glow on hover */
+}

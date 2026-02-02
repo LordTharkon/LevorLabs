@@ -1,1 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LevorLabs - Hobby Pricing</title>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+	<link rel="stylesheet" href="style.css">
+	
+</head>
+<body>
+<div class="background-grid"></div>
+<header>
+    <div class="container header-content" style="max-width: 1200px;">
+        <a href="/" class="brand">
+            <div class="brand-icon"><i class="ph-fill ph-flask"></i></div>
+            <div class="brand-text">Levor<span>Labs</span></div>
+        </a>
+        <nav>
+            <a href="/contact.html" class="nav-link">Contact <i class="ph ph-envelope"></i></a>
+        </nav>
+    </div>
+</header>
 
+
+<div id="selectionView">
+    <div class="hero">
+        <h1>Pricing Lab</h1> <p>Calculate material costs, set margins, and price your handmade goods with confidence.</p>
+        
+        <div class="search-container">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="templateSearch" class="search-input" placeholder="Search templates (e.g., Rugs, Candles)...">
+        </div>
+    </div>
+
+    <div class="grid-container" id="templateGrid">
+        
+        <div class="card" data-type="tufting" data-keywords="rug yarn carpet">
+            <div class="tags">✂️ Textiles</div>
+            <h3>Rug Tufting</h3>
+            <div class="tags">
+                <span class="tag">Yarn</span>
+                <span class="tag">Backing</span>
+                <span class="tag">Glue</span>
+            </div>
+        </div>
+
+        <div class="card" data-type="candles" data-keywords="wax scent wick jar">
+            <div class="tags">🔥 Home Fragrance</div>
+            <h3>Candle Making</h3>
+            <div class="tags">
+                <span class="tag">Wax</span>
+                <span class="tag">Fragrance</span>
+                <span class="tag">Vessels</span>
+            </div>
+        </div>
+
+        <div class="card" data-type="soap" data-keywords="bath lye oil wash clean">
+    <div class="tags">🧼 Bath & Body</div>
+    <h3>Cold Process Soap</h3>
+    <div class="tags">
+        <span class="tag">Oils</span>
+        <span class="tag">Lye</span>
+        <span class="tag">Cure Time</span>
+    </div>
+</div>
+
+        <div class="card coming-soon">
+            <span class="badge-soon">Coming Soon</span>
+            <div style="opacity: 0.5;">
+                <div class="tags">🖨️ Tech</div>
+                <h3>3D Printing</h3>
+                <div class="tags">
+                    <span class="tag">Filament</span>
+                    <span class="tag">Energy</span>
+                    <span class="tag">Fail Rate</span>
+                </div>
+            </div>
+        </div>
+
+        <div id="noResults">
+            <h3>No templates found.</h3>
+            <p>Try searching for "Candle" or "Rug".</p>
+        </div>
+
+    </div>
+</div>
+
+
+
+    <div id="calculatorView">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <div class="back-link" id="backBtn">← Back to Templates</div>
+    
+    <div class="mode-toggle-container">
+        <span class="mode-label" id="unitLabelImp" style="color:var(--primary);">Imperial (oz/lb)</span>
+        <label class="switch"> 
+            <input type="checkbox" id="unitToggle">
+            <span class="slider round"></span>
+        </label>
+        <span class="mode-label" id="unitLabelMet" style="color:var(--text-sub);">Metric (g/kg)</span>
+    </div>
+</div>
+		
+
+        <div class="calc-layout">
+            
+            <div class="inputs-column">
+                
+<div class="section-card">
+    <div class="section-header">
+        <div style="display:flex; align-items:center; gap:10px;font-weight: 700;">
+            <div class="step-num">1</div>
+            <div>Materials</div>
+        </div>
+        
+        <div class="mode-toggle-container">
+            <span class="mode-label" style="font-size:0.8rem;">Basic</span>
+            <label class="switch" style="transform:scale(0.8);"> 
+                <input type="checkbox" id="advancedToggle">
+                <span class="slider round"></span>
+            </label>
+            <span class="mode-label" style="font-size:0.8rem;">Adv</span>
+        </div>
+    </div>
+    
+    <div id="materialsList"></div>
+    
+    <div style="text-align:right; font-weight:bold; margin-top:15px; border-top:1px solid #eee; padding-top:10px;">
+        Total Materials: <span id="totalMaterials">$0.00</span>
+    </div>
+</div>
+
+                <div class="section-card">
+    <div class="section-header">
+        <div style="display:flex; align-items:center; gap:10px; font-weight: 700;">
+            <div class="step-num">2</div>
+            <div>Labor & Overhead</div>
+        </div>
+    </div>
+
+    <div class="category-header" style="margin-top: 10px;">Labor Costs</div>
+
+    <div class="input-row" style="grid-template-columns: 1fr 1fr; border-bottom: none; padding-bottom: 0;">
+        <div class="input-group">
+            <label style="margin-bottom:5px; display:block; font-size:0.85rem; color:var(--text-sub);">Hourly Rate ($)</label>
+            <div class="input-wrapper">
+                <span>$</span>
+                <input type="number" id="hourlyRate">
+            </div>
+        </div>
+        <div class="input-group">
+            <label style="margin-bottom:5px; display:block; font-size:0.85rem; color:var(--text-sub);">Hours Spent</label>
+            <div class="input-wrapper">
+                <input type="number" id="hoursSpent">
+            </div>
+        </div>
+    </div>
+    
+    <div class="category-header">Fixed Expenses</div>
+
+    <div class="input-group">
+        <label style="margin-bottom:5px; display:block; font-size:0.85rem; color:var(--text-sub);">Fixed Overhead ($)</label>
+        <div class="input-wrapper">
+            <span>$</span>
+            <input type="number" id="fixedOverhead">
+        </div>
+        <small style="color:#9ca3af; display:block; margin-top:5px;">Rent, electricity, software subscriptions, etc.</small>
+    </div>
+
+    <div style="text-align:right; font-weight:bold; margin-top:20px; border-top:1px solid #eee; padding-top:10px;">
+        Total Operations: <span id="totalLaborOps">$0.00</span>
+    </div>
+</div>
+
+                <div class="section-card">
+    <div class="section-header">
+        <div style="display:flex; align-items:center; gap:10px; font-weight: 700;">
+            <div class="step-num">3</div>
+            <div>Markup Percentage</div> 
+        </div>
+    </div>
+					<div class="slider-container">
+                        <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+                            
+                            <span id="profitDisplay" style="font-weight:bold; color:var(--success);">50%</span>
+                        </div>
+                        <input type="range" id="profitMargin" min="0" max="300" value="50">
+                        <div style="display:flex; justify-content:space-between; font-size:0.75rem; color:#9ca3af; margin-top:5px;">
+                            <span>0% (Breakeven)</span>
+                            <span>100% (2x Cost)</span>
+                            <span>300% (4x Cost)</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="summary-card">
+                <div class="price-display">
+                    <label>Recommended Retail Price</label>
+                    <div class="big-price" id="displayRetail">$0.00</div>
+                </div>
+
+                <div class="summary-row">
+                    <span>Total Expenses (Breakeven)</span>
+                    <span id="displayBreakEven">$0.00</span>
+                </div>
+                <div class="summary-row profit">
+                    <span>Net Profit</span>
+                    <span id="displayProfit">$0.00</span>
+                </div>
+                <div class="summary-row" style="border:none; padding-bottom:0;">
+                    <span>Margin</span>
+                    <span id="displayMargin">0%</span>
+                </div>
+
+                <div class="chart-container">
+                    <div class="doughnut" id="doughnutChart"></div>
+                </div>
+
+                <div style="display:flex; justify-content:center; gap:15px; font-size:0.8rem;">
+                    <span style="color:#a855f7;">● Labor</span>
+                    <span style="color:#3b82f6;">● Material</span>
+                    <span style="color:#10b981;">● Profit</span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script type="module" src="app.js"></script>
+</body>
+</html>
