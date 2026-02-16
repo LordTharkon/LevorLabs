@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description"
+    content="Find your next perfect read with AI-powered book recommendations personalized to your preferences.">
+  <title>BookFinder AI - Your Personal Book Recommendation Assistant</title>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="styles.css">
+
+  <!-- Favicon -->
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📚</text></svg>">
+</head>
+
+<body>
+  <!-- Header -->
+  <header>
+    <div class="container">
+      <div class="header-content">
+        <h1 class="app-title">📚 BookFinder AI</h1>
+        <p class="app-subtitle">
+          Discover your next favorite book with AI-powered recommendations tailored to your unique preferences
+        </p>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <div class="container">
+
+    <!-- API Configuration Section - Hidden (key pre-configured) -->
+    <section class="api-config" style="display: none;">
+      <div class="api-config-header" id="apiConfigHeader">
+        <span style="font-size: 1.25rem;">🔑</span>
+        <h3 style="margin: 0; flex: 1;">API Configuration</h3>
+        <span style="color: var(--text-muted); font-size: 0.9rem;">Click to expand</span>
+      </div>
+
+      <div class="api-config-content" id="apiConfigContent">
+        <div class="api-notice">
+          <strong>📋 How to get your free API key:</strong><br>
+          1. Visit <a href="https://enter.pollinations.ai" target="_blank"
+            style="color: var(--accent-secondary);">enter.pollinations.ai</a><br>
+          2. Sign up or log in with your account<br>
+          3. Create a new API key from your dashboard<br>
+          4. Copy and paste it below
+        </div>
+
+        <div class="form-group">
+          <label for="apiKey">Pollinations AI API Key</label>
+          <input type="password" id="apiKey" placeholder="sk_..." autocomplete="off">
+        </div>
+
+        <div style="display: flex; gap: 1rem;">
+          <button class="btn btn-primary" id="saveApiKey">Save API Key</button>
+          <button class="btn btn-secondary" id="testApi">Test Connection</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Error Message -->
+    <div class="error-message" id="errorMessage">
+      <span id="errorText"></span>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+
+      <!-- Sidebar with Filters -->
+      <aside class="sidebar glass-card">
+        <h2 style="font-size: 1.5rem; margin-bottom: var(--spacing-lg);">🎯 Personalization</h2>
+
+        <!-- Genres -->
+        <div class="filter-section">
+          <h3>Genres</h3>
+          <div class="checkbox-group">
+            <label class="checkbox-item">
+              <input type="checkbox" name="genre" value="Fiction">
+              <span class="checkbox-label">Fiction</span>
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" name="genre" value="Non-Fiction">
+              <span class="checkbox-label">Non-Fiction</span>
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" name="genre" value="Mystery">
+              <span class="checkbox-label">Mystery / Thriller</span>
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" name="genre" value="Science Fiction">
+              <span class="checkbox-label">Science Fiction</span>
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" name="genre" value="Fantasy">
+              <span class="checkbox-label">Fantasy</span>
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" name="genre" value="Romance">
+              <span class="checkbox-label">Romance</span>
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" name="genre" value="Historical Fiction">
+              <span class="checkbox-label">Historical Fiction</span>
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" name="genre" value="Biography">
+              <span class="checkbox-label">Biography / Memoir</span>
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" name="genre" value="Self-Help">
+              <span class="checkbox-label">Self-Help</span>
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" name="genre" value="Horror">
+              <span class="checkbox-label">Horror</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Page Count -->
+        <div class="filter-section">
+          <h3>Page Count</h3>
+          <div class="slider-container">
+            <div class="slider-label">
+              <span class="checkbox-label">Preferred Length</span>
+              <span class="slider-value" id="pageCountValue">350</span>
+            </div>
+            <input type="range" id="pageCount" min="50" max="1000" value="350" step="50">
+            <div
+              style="display: flex; justify-content: space-between; margin-top: 0.25rem; font-size: 0.75rem; color: var(--text-muted);">
+              <span>50</span>
+              <span>1000+</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Publication Year Range -->
+        <div class="filter-section">
+          <h3>Publication Years</h3>
+          <div class="slider-container">
+            <div class="slider-label">
+              <span class="checkbox-label">From</span>
+              <span class="slider-value" id="yearMinValue">1900</span>
+            </div>
+            <input type="range" id="yearMin" min="1800" max="2026" value="1900" step="10">
+          </div>
+          <div class="slider-container">
+            <div class="slider-label">
+              <span class="checkbox-label">To</span>
+              <span class="slider-value" id="yearMaxValue">2026</span>
+            </div>
+            <input type="range" id="yearMax" min="1800" max="2026" value="2026" step="10">
+          </div>
+        </div>
+
+        <!-- Reading Level -->
+        <div class="filter-section">
+          <h3>Reading Level</h3>
+          <select id="readingLevel">
+            <option value="any">Any Level</option>
+            <option value="young-adult">Young Adult</option>
+            <option value="adult">Adult</option>
+            <option value="literary">Literary / Academic</option>
+            <option value="easy-reading">Easy Reading</option>
+          </select>
+        </div>
+
+        <!-- Mood / Tone -->
+        <div class="filter-section">
+          <h3>Mood / Tone</h3>
+          <div class="checkbox-group">
+            <label class="checkbox-item">
+              <input type="checkbox" name="mood" value="Uplifting">
+              <span class="checkbox-label">Uplifting / Inspiring</span>
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" name="mood" value="Dark">
+              <span class="checkbox-label">Dark / Gritty</span>
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" name="mood" value="Humorous">
+              <span class="checkbox-label">Humorous / Funny</span>
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" name="mood" value="Emotional">
+              <span class="checkbox-label">Emotional / Heartfelt</span>
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" name="mood" value="Suspenseful">
+              <span class="checkbox-label">Suspenseful / Tense</span>
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" name="mood" value="Thought-Provoking">
+              <span class="checkbox-label">Thought-Provoking</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Pacing -->
+        <div class="filter-section">
+          <h3>Pacing</h3>
+          <select id="pacing">
+            <option value="any">Any Pace</option>
+            <option value="fast">Fast-Paced / Action-Packed</option>
+            <option value="moderate">Moderate Pace</option>
+            <option value="slow">Slow Burn / Character-Driven</option>
+          </select>
+        </div>
+
+        <!-- Content Warnings to Avoid -->
+        <div class="filter-section">
+          <h3>Please Avoid</h3>
+          <div class="checkbox-group">
+            <label class="checkbox-item">
+              <input type="checkbox" name="contentWarning" value="Violence">
+              <span class="checkbox-label">Graphic Violence</span>
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" name="contentWarning" value="Sexual Content">
+              <span class="checkbox-label">Sexual Content</span>
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" name="contentWarning" value="Profanity">
+              <span class="checkbox-label">Strong Profanity</span>
+            </label>
+            <label class="checkbox-item">
+              <input type="checkbox" name="contentWarning" value="Death">
+              <span class="checkbox-label">Death / Grief</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Favorite Authors -->
+        <div class="filter-section">
+          <h3>Favorite Authors</h3>
+          <input type="text" id="favoriteAuthors" placeholder="e.g., Neil Gaiman, Agatha Christie"
+            style="font-size: 0.9rem;">
+          <small style="color: var(--text-muted); font-size: 0.8rem; display: block; margin-top: 0.5rem;">
+            Authors whose style you enjoy
+          </small>
+        </div>
+
+        <!-- Recent Reads -->
+        <div class="filter-section">
+          <h3>Recent Reads</h3>
+          <textarea id="recentReads" placeholder="Books you've recently read and enjoyed, one per line..." rows="4"
+            style="font-size: 0.9rem; resize: vertical;"></textarea>
+          <small style="color: var(--text-muted); font-size: 0.8rem; display: block; margin-top: 0.5rem;">
+            Help AI understand your taste based on what you've loved recently
+          </small>
+        </div>
+      </aside>
+
+      <!-- Content Area -->
+      <main class="content-area">
+
+        <!-- Search Section -->
+        <section class="search-section glass-card">
+          <h2>What are you looking for?</h2>
+          <p style="color: var(--text-secondary); margin-bottom: var(--spacing-md);">
+            Describe the kind of book you want to read, and let AI find the perfect matches for you.
+          </p>
+
+          <div class="form-group">
+            <label for="bookDescription">Your Reading Preferences</label>
+            <div class="search-input-wrapper">
+              <textarea id="bookDescription"
+                placeholder="E.g., 'A mystery novel with a strong female protagonist set in Victorian England' or 'An inspiring memoir about overcoming adversity' or 'A thought-provoking science fiction book about AI'"
+                rows="4"></textarea>
+            </div>
+          </div>
+
+          <div class="generate-btn-wrapper">
+            <button class="btn btn-primary btn-large" id="generateBtn">
+              Find My Next Read 📚
+            </button>
+          </div>
+        </section>
+
+        <!-- Loading Animation -->
+        <div class="loading" id="loading">
+          <div class="spinner"></div>
+          <p style="color: var(--text-secondary); font-size: 1.1rem;">
+            <strong>Finding your perfect reads...</strong><br>
+            <span style="font-size: 0.9rem;">Our AI is analyzing thousands of books to match your preferences</span>
+          </p>
+        </div>
+
+        <!-- Results Section -->
+        <section class="results" id="results">
+          <div class="results-header">
+            <h2>Your Personalized Recommendations</h2>
+            <p style="color: var(--text-secondary);">
+              Found <strong id="resultsCount">0</strong> perfect books for you
+            </p>
+          </div>
+
+          <div class="book-grid" id="bookGrid">
+            <!-- Book cards will be inserted here by JavaScript -->
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <p>
+        Powered by <a href="https://pollinations.ai" target="_blank">Pollinations AI</a> &amp;
+        <a href="https://ai.google.dev/" target="_blank">Google Gemini 2.5 Flash Lite</a>
+      </p>
+      <p style="margin-top: 0.5rem; font-size: 0.9rem;">
+        Built with ❤️ for book lovers everywhere
+      </p>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="api.js"></script>
+  <script src="app.js"></script>
+</body>
+
+</html>
