@@ -3,21 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LevorLabs - Hobby Pricing</title>
+    
+    <title>Pricing Lab | LevorLabs - Craft Cost & Profit Calculator</title>
+    <meta name="description" content="Free cost calculator for handmade goods. Accurately price your candles, soaps, and tufted rugs by calculating COGS, labor, and profit margins.">
+    <meta name="keywords" content="craft pricing calculator, handmade cost calculator, candle pricing, soap business tools, profit margin calculator, COGS">
+    <meta name="author" content="Levor Labs">
+    <link rel="canonical" href="https://levorlabs.com/pricing-lab/">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://levorlabs.com/pricing-lab/">
+    <meta property="og:title" content="Pricing Lab - Handmade Product Cost Calculator">
+    <meta property="og:description" content="Stop undercharging. Calculate material costs, labor, and overhead to find your perfect retail price.">
+    <meta property="og:image" content="https://levorlabs.com/social-preview.jpg">
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+
     <script src="https://unpkg.com/@phosphor-icons/web"></script>
 	<link rel="stylesheet" href="style.css">
-	
+    
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-DYD8L47014"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+    
+      gtag('config', 'G-DYD8L47014');
+    </script>
 </head>
 <body>
 <div class="background-grid"></div>
 <header>
-    <div class="container header-content" style="max-width: 1200px;">
-        <a href="/" class="brand">
-            <div class="brand-icon"><i class="ph-fill ph-flask"></i></div>
-            <div class="brand-text">Levor<span>Labs</span></div>
+    <div class="container header-content">
+        <a href="../index.html" class="brand">
+            <div class="brand-icon" style="background: #5b4dd4;"><i class="ph-fill ph-flask"></i></div>
+            <div class="brand-text">LevorLabs <span>/ Pricing Lab</span></div>
         </a>
         <nav>
-            <a href="/contact.html" class="nav-link">Contact <i class="ph ph-envelope"></i></a>
+            <a href="../index.html" class="nav-link">Back to Hub</a>
         </nav>
     </div>
 </header>
@@ -92,14 +117,9 @@
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
     <div class="back-link" id="backBtn">← Back to Templates</div>
     
-    <div class="mode-toggle-container">
-        <span class="mode-label" id="unitLabelImp" style="color:var(--primary);">Imperial (oz/lb)</span>
-        <label class="switch"> 
-            <input type="checkbox" id="unitToggle">
-            <span class="slider round"></span>
-        </label>
-        <span class="mode-label" id="unitLabelMet" style="color:var(--text-sub);">Metric (g/kg)</span>
-    </div>
+    <button id="settingsBtn" class="settings-btn" aria-label="Settings">
+        <i class="ph-bold ph-gear"></i>
+    </button>
 </div>
 		
 
@@ -125,6 +145,10 @@
     </div>
     
     <div id="materialsList"></div>
+    <div id="customMaterialsList"></div>
+    <div id="addCustomMaterialWrapper" class="is-advanced row-hidden" style="margin-top: 15px; text-align: center;">
+        <button type="button" id="addCustomMaterialBtn" class="btn-subtle"><i class="ph-bold ph-plus"></i> Add Custom Material</button>
+    </div>
     
     <div style="text-align:right; font-weight:bold; margin-top:15px; border-top:1px solid #eee; padding-top:10px;">
         Total Materials: <span id="totalMaterials">$0.00</span>
@@ -143,9 +167,9 @@
 
     <div class="input-row" style="grid-template-columns: 1fr 1fr; border-bottom: none; padding-bottom: 0;">
         <div class="input-group">
-            <label style="margin-bottom:5px; display:block; font-size:0.85rem; color:var(--text-sub);">Hourly Rate ($)</label>
+            <label id="hourlyRateLabel" style="margin-bottom:5px; display:block; font-size:0.85rem; color:var(--text-sub);">Hourly Rate ($)</label>
             <div class="input-wrapper">
-                <span>$</span>
+                <span class="currency-label">$</span>
                 <input type="number" id="hourlyRate">
             </div>
         </div>
@@ -160,9 +184,9 @@
     <div class="category-header">Fixed Expenses</div>
 
     <div class="input-group">
-        <label style="margin-bottom:5px; display:block; font-size:0.85rem; color:var(--text-sub);">Fixed Overhead ($)</label>
+        <label id="fixedOverheadLabel" style="margin-bottom:5px; display:block; font-size:0.85rem; color:var(--text-sub);">Fixed Overhead ($)</label>
         <div class="input-wrapper">
-            <span>$</span>
+            <span class="currency-label">$</span>
             <input type="number" id="fixedOverhead">
         </div>
         <small style="color:#9ca3af; display:block; margin-top:5px;">Rent, electricity, software subscriptions, etc.</small>
@@ -228,7 +252,49 @@
 
         </div>
     </div>
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3><i class="ph-bold ph-sliders"></i> Preferences</h3>
+                <button id="closeSettingsBtn" class="close-btn" aria-label="Close settings">
+                    <i class="ph-bold ph-x"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="setting-group">
+                    <label class="setting-label">Measurement System</label>
+                    <div class="segmented-control">
+                        <button type="button" id="unitImpBtn" class="segment-btn">Imperial (oz/lb)</button>
+                        <button type="button" id="unitMetBtn" class="segment-btn">Metric (g/kg)</button>
+                    </div>
+                </div>
+                <div class="setting-group">
+                    <label class="setting-label" for="currencySelect">Currency Symbol</label>
+                    <select id="currencySelect" class="settings-select">
+                        <option value="$">$ (USD/CAD/AUD)</option>
+                        <option value="€">€ (EUR)</option>
+                        <option value="£">£ (GBP)</option>
+                        <option value="¥">¥ (JPY/CNY)</option>
+                        <option value="₹">₹ (INR)</option>
+                        <option value="₪">₪ (ILS)</option>
+                        <option value="kr">kr (SEK/NOK/DKK)</option>
+                        <option value="₱">₱ (PHP)</option>
+                        <option value="R$">R$ (BRL)</option>
+                        <option value="custom">Custom...</option>
+                    </select>
+                </div>
+                <div class="setting-group hidden" id="customCurrencyGroup">
+                    <label class="setting-label" for="customCurrencyInput">Custom Symbol</label>
+                    <input type="text" id="customCurrencyInput" class="settings-input" maxlength="5" placeholder="e.g. CHF">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="saveSettingsBtn" class="primary-btn">Done</button>
+            </div>
+        </div>
+    </div>
 
-    <script type="module" src="app.js"></script>
+    <script type="module" src="app.js?v=2"></script>
 </body>
 </html>

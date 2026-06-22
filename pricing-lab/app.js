@@ -11,6 +11,8 @@ const calculators = {
 
 let currentConfig = null;
 let isMetric = false;
+let currencySymbol = localStorage.getItem('levor_global_currency') || '$';
+let customMaterials = [];
 
 // --- CONVERSION LOGIC ---
 const unitMap = {
@@ -50,7 +52,13 @@ document.addEventListener('DOMContentLoaded', () => {
         card.addEventListener('click', () => {
             if(card.classList.contains('coming-soon')) return;
             const type = card.dataset.type;
-            if (calculators[type]) loadCalculator(calculators[type]);
+            if (calculators[type]) {
+                loadCalculator(calculators[type]);
+                // Update URL without refreshing
+                const newUrl = new URL(window.location);
+                newUrl.searchParams.set('type', type);
+                window.history.pushState({ type: type }, '', newUrl);
+            }
         });
     });
 
@@ -59,16 +67,111 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('calculatorView').style.display = 'none';
         document.getElementById('selectionView').style.display = 'block';
         currentConfig = null;
+        
+        // Clear URL
+        const newUrl = new URL(window.location);
+        newUrl.searchParams.delete('type');
+        window.history.pushState({}, '', newUrl);
     });
 
-    // 4. UNIT TOGGLE
-    const unitToggle = document.getElementById('unitToggle');
-    unitToggle.addEventListener('change', (e) => {
-        isMetric = e.target.checked;
-        updateUnitLabels(); // Update UI colors
-        convertValues();    // Convert numbers
-        calculateTotal();   // Recalc totals
-        saveState();        // Save preference
+    // 3.5 POPSTATE (Browser Back/Forward)
+    window.addEventListener('popstate', (e) => {
+        if (e.state && e.state.type && calculators[e.state.type]) {
+            loadCalculator(calculators[e.state.type]);
+        } else {
+            // Return to selection
+            document.getElementById('calculatorView').style.display = 'none';
+            document.getElementById('selectionView').style.display = 'block';
+            currentConfig = null;
+        }
+    });
+
+    // 4. SETTINGS MODAL & UNIT/CURRENCY ACTIONS
+    const settingsBtn = document.getElementById('settingsBtn');
+    const settingsModal = document.getElementById('settingsModal');
+    const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+    const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+    const currencySelect = document.getElementById('currencySelect');
+    const customCurrencyGroup = document.getElementById('customCurrencyGroup');
+    const customCurrencyInput = document.getElementById('customCurrencyInput');
+    const unitImpBtn = document.getElementById('unitImpBtn');
+    const unitMetBtn = document.getElementById('unitMetBtn');
+
+    // Open Settings Modal
+    settingsBtn.addEventListener('click', () => {
+        updateUnitLabels();
+        
+        // Populate currency selector
+        const standardOptions = Array.from(currencySelect.options).map(o => o.value);
+        if (standardOptions.includes(currencySymbol) && currencySymbol !== 'custom') {
+            currencySelect.value = currencySymbol;
+            customCurrencyGroup.classList.add('hidden');
+        } else {
+            currencySelect.value = 'custom';
+            customCurrencyGroup.classList.remove('hidden');
+            customCurrencyInput.value = currencySymbol;
+        }
+        
+        settingsModal.classList.add('show');
+    });
+
+    // Close Settings Modal
+    const closeModal = () => {
+        settingsModal.classList.remove('show');
+    };
+
+    closeSettingsBtn.addEventListener('click', closeModal);
+    
+    saveSettingsBtn.addEventListener('click', () => {
+        let selectedCurrency = currencySelect.value;
+        if (selectedCurrency === 'custom') {
+            selectedCurrency = customCurrencyInput.value.trim() || '$';
+        }
+        
+        if (currencySymbol !== selectedCurrency) {
+            currencySymbol = selectedCurrency;
+            localStorage.setItem('levor_global_currency', currencySymbol);
+            updateCurrencyDisplay();
+            calculateTotal();
+            saveState();
+        }
+        closeModal();
+    });
+
+    settingsModal.addEventListener('click', (e) => {
+        if (e.target === settingsModal) {
+            closeModal();
+        }
+    });
+
+    currencySelect.addEventListener('change', () => {
+        if (currencySelect.value === 'custom') {
+            customCurrencyGroup.classList.remove('hidden');
+            customCurrencyInput.focus();
+        } else {
+            customCurrencyGroup.classList.add('hidden');
+        }
+    });
+
+    // Unit toggle buttons in Modal
+    unitImpBtn.addEventListener('click', () => {
+        if (isMetric) {
+            isMetric = false;
+            updateUnitLabels();
+            convertValues();
+            calculateTotal();
+            saveState();
+        }
+    });
+
+    unitMetBtn.addEventListener('click', () => {
+        if (!isMetric) {
+            isMetric = true;
+            updateUnitLabels();
+            convertValues();
+            calculateTotal();
+            saveState();
+        }
     });
 
     // 5. ADVANCED TOGGLE (Refactored: CSS Hide only)
@@ -79,19 +182,54 @@ document.addEventListener('DOMContentLoaded', () => {
         saveState(); // Save preference
     });
 
+    // Add Custom Material Button
+    const addCustomBtn = document.getElementById('addCustomMaterialBtn');
+    if (addCustomBtn) {
+        addCustomBtn.addEventListener('click', () => {
+            if (customMaterials.length < 10) {
+                customMaterials.push({
+                    id: 'custom_' + Date.now(),
+                    name: '',
+                    cost: '',
+                    qty: ''
+                });
+                renderCustomMaterials();
+                calculateTotal();
+                saveState();
+            }
+        });
+    }
+
     // 6. GLOBAL INPUT LISTENER (For Auto-Save)
     // We attach this to the calculator view so we catch ANY input change bubbling up
     document.getElementById('calculatorView').addEventListener('input', (e) => {
         // Only trigger recalc/save if it's an input we care about
         if(e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') {
+            // Also sync custom material names since they don't have calculation logic attached natively
+            if (e.target.classList.contains('custom-name-input')) {
+                const id = e.target.closest('.custom-material-row').dataset.customId;
+                const mat = customMaterials.find(m => m.id === id);
+                if (mat) mat.name = e.target.value;
+            }
             calculateTotal();
             saveState();
         }
     });
+
+    // 7. INITIALIZE CURRENCY DISPLAY
+    updateCurrencyDisplay();
+
+    // 8. DEEP LINKING: Check URL for a tool type on load
+    const urlParams = new URLSearchParams(window.location.search);
+    const toolType = urlParams.get('type');
+    if (toolType && calculators[toolType]) {
+        loadCalculator(calculators[toolType]);
+    }
 });
 
 function loadCalculator(config) {
     currentConfig = config;
+    customMaterials = [];
     
     // Switch Views
     document.getElementById('selectionView').style.display = 'none';
@@ -101,7 +239,6 @@ function loadCalculator(config) {
     renderInputs(config);
 
     // 2. Check for Saved Data
-    // We try to load data. If loadState() returns false (no save found), we stick with defaults.
     const hasSavedData = loadState(); 
 
     if (!hasSavedData) {
@@ -113,12 +250,16 @@ function loadCalculator(config) {
         document.getElementById('profitDisplay').innerText = config.defaults.profitMargin + "%";
         
         // Default Toggles
-        document.getElementById('unitToggle').checked = false;
         document.getElementById('advancedToggle').checked = false;
         isMetric = false;
         updateUnitLabels();
         toggleAdvancedRows(false);
     }
+    
+    renderCustomMaterials();
+
+    // Refresh currency UI elements
+    updateCurrencyDisplay();
 
     calculateTotal();
 }
@@ -165,7 +306,7 @@ function renderInputs(config) {
                 ${mat.mode === 'advanced' ? '<span class="adv-badge">ADV</span>' : ''}
             </div>
             <div class="input-wrapper">
-                <span>${mat.unitPre}</span>
+                <span class="currency-label">${currencySymbol}</span>
                 <input type="number" class="cost-input" data-id="${index}" data-orig-unit="${mat.unitPost}" value="${mat.default.toFixed(2)}" placeholder="0.00">
                 <span class="unit-label-cost">${mat.unitPost}</span>
             </div>
@@ -173,7 +314,7 @@ function renderInputs(config) {
                 <input type="number" class="qty-input" data-id="${index}" value="${mat.qtyDefault.toFixed(3)}" placeholder="0">
                 <span class="unit-label-qty">${formatQtyLabel(mat.qtyLabel, mat.unitPost)}</span>
             </div>
-            <div class="row-total" id="row-total-${index}">$0.00</div>
+            <div class="row-total" id="row-total-${index}">${currencySymbol}0.00</div>
         `;
         matContainer.appendChild(row);
     });
@@ -199,6 +340,56 @@ function renderInputs(config) {
     }
 }
 
+function renderCustomMaterials() {
+    const container = document.getElementById('customMaterialsList');
+    if (!container) return;
+    container.innerHTML = '';
+    
+    customMaterials.forEach((mat) => {
+        const row = document.createElement('div');
+        row.className = 'input-row custom-material-row is-advanced';
+        row.dataset.customId = mat.id;
+        row.style.gridTemplateColumns = '1fr 130px 120px 90px 32px';
+        
+        row.innerHTML = `
+            <div class="custom-name-wrapper">
+                <input type="text" class="custom-name-input" value="${mat.name}" placeholder="Item Name">
+            </div>
+            <div class="input-wrapper">
+                <span class="currency-label">${currencySymbol}</span>
+                <input type="number" class="custom-cost-field" data-id="${mat.id}" value="${mat.cost}" placeholder="0.00" min="0">
+            </div>
+            <div class="input-wrapper">
+                <input type="number" class="custom-qty-field" data-id="${mat.id}" value="${mat.qty}" placeholder="0" min="0">
+            </div>
+            <div class="row-total" id="row-total-${mat.id}">${currencySymbol}0.00</div>
+            <button class="delete-row-btn" data-id="${mat.id}" title="Remove Item"><i class="ph-bold ph-trash"></i></button>
+        `;
+        container.appendChild(row);
+    });
+
+    // Attach delete listeners
+    container.querySelectorAll('.delete-row-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const id = e.currentTarget.dataset.id;
+            customMaterials = customMaterials.filter(m => m.id !== id);
+            renderCustomMaterials();
+            calculateTotal();
+            saveState();
+        });
+    });
+
+    // Sync visibility based on advanced toggle
+    const advToggle = document.getElementById('advancedToggle');
+    if (advToggle) {
+        toggleAdvancedRows(advToggle.checked);
+    }
+
+    // Update button state
+    const addBtn = document.getElementById('addCustomMaterialBtn');
+    if (addBtn) addBtn.disabled = customMaterials.length >= 10;
+}
+
 // --- LOGIC: VISUAL TOGGLING ---
 function toggleAdvancedRows(showAdvanced) {
     // 1. Toggle the Rows
@@ -211,7 +402,7 @@ function toggleAdvancedRows(showAdvanced) {
     // 2. Toggle the Headers
     const headers = document.querySelectorAll('.category-header');
     headers.forEach(header => {
-        const catName = header.innerText;
+        const catName = header.textContent.trim();
         const rowsForThisCat = document.querySelectorAll(`.input-row[data-category="${catName}"]`);
         
         let hasVisibleChildren = false;
@@ -242,8 +433,33 @@ function toggleAdvancedRows(showAdvanced) {
 }
 
 function updateUnitLabels() {
-    document.getElementById('unitLabelImp').style.color = isMetric ? 'var(--text-sub)' : 'var(--primary)';
-    document.getElementById('unitLabelMet').style.color = isMetric ? 'var(--primary)' : 'var(--text-sub)';
+    const unitImpBtn = document.getElementById('unitImpBtn');
+    const unitMetBtn = document.getElementById('unitMetBtn');
+    if (unitImpBtn && unitMetBtn) {
+        if (isMetric) {
+            unitImpBtn.classList.remove('active');
+            unitMetBtn.classList.add('active');
+        } else {
+            unitMetBtn.classList.remove('active');
+            unitImpBtn.classList.add('active');
+        }
+    }
+}
+
+function updateCurrencyDisplay() {
+    const currencyLabels = document.querySelectorAll('.currency-label');
+    currencyLabels.forEach(el => {
+        el.innerText = currencySymbol;
+    });
+
+    const hourlyLabel = document.getElementById('hourlyRateLabel');
+    if (hourlyLabel) {
+        hourlyLabel.innerText = `Hourly Rate (${currencySymbol})`;
+    }
+    const overheadLabel = document.getElementById('fixedOverheadLabel');
+    if (overheadLabel) {
+        overheadLabel.innerText = `Fixed Overhead (${currencySymbol})`;
+    }
 }
 
 // --- LOGIC: SAVING & LOADING ---
@@ -252,7 +468,7 @@ function saveState() {
     
     const state = {
         // Toggles
-        isMetric: document.getElementById('unitToggle').checked,
+        isMetric: isMetric,
         isAdvanced: document.getElementById('advancedToggle').checked,
         
         // Global Inputs
@@ -263,7 +479,8 @@ function saveState() {
         wasteFactor: document.getElementById('wasteFactor') ? document.getElementById('wasteFactor').value : 0,
 
         // Material Inputs (Array of values)
-        materials: [] 
+        materials: [],
+        customMaterials: []
     };
 
     // Scrape all dynamic inputs
@@ -276,6 +493,16 @@ function saveState() {
             cost: input.value,
             qty: qty
         });
+    });
+
+    // Scrape custom
+    const customRows = document.querySelectorAll('.custom-material-row');
+    customRows.forEach(row => {
+        const id = row.dataset.customId;
+        const name = row.querySelector('.custom-name-input').value;
+        const cost = row.querySelector('.custom-cost-field').value;
+        const qty = row.querySelector('.custom-qty-field').value;
+        state.customMaterials.push({ id, name, cost, qty });
     });
 
     localStorage.setItem(`levor_calc_${currentConfig.id}`, JSON.stringify(state));
@@ -291,7 +518,6 @@ function loadState() {
         const state = JSON.parse(savedJSON);
 
         // 1. Restore Toggles
-        document.getElementById('unitToggle').checked = state.isMetric;
         isMetric = state.isMetric;
         updateUnitLabels();
 
@@ -337,6 +563,9 @@ function loadState() {
                 }
             });
         }
+        
+        customMaterials = state.customMaterials || [];
+        
         return true;
 
     } catch(e) {
@@ -422,7 +651,28 @@ function calculateTotal() {
             let rowTotal = cost * qty;
 
             if(rowTotalDiv) {
-                rowTotalDiv.innerText = "$" + rowTotal.toFixed(2);
+                rowTotalDiv.innerText = currencySymbol + rowTotal.toFixed(2);
+            }
+            totalMaterialCost += rowTotal;
+        }
+    });
+
+    const customCosts = document.querySelectorAll('.custom-cost-field');
+    customCosts.forEach((costInput) => {
+        const row = costInput.closest('.input-row');
+        if (row.classList.contains('row-hidden')) return;
+
+        const id = costInput.dataset.id;
+        const qtyInput = document.querySelector(`.custom-qty-field[data-id="${id}"]`);
+        const rowTotalDiv = document.getElementById(`row-total-${id}`);
+        
+        if (qtyInput) {
+            const cost = parseFloat(costInput.value) || 0;
+            const qty = parseFloat(qtyInput.value) || 0;
+            let rowTotal = cost * qty;
+
+            if(rowTotalDiv) {
+                rowTotalDiv.innerText = currencySymbol + rowTotal.toFixed(2);
             }
             totalMaterialCost += rowTotal;
         }
@@ -446,11 +696,11 @@ function calculateTotal() {
     const profitAmt = breakEven * (marginPercent / 100);
     const retailPrice = breakEven + profitAmt;
 
-    document.getElementById('totalMaterials').innerText = "$" + totalMaterialCost.toFixed(2);
-    document.getElementById('totalLaborOps').innerText = "$" + totalOps.toFixed(2);
-    document.getElementById('displayRetail').innerText = "$" + retailPrice.toFixed(2);
-    document.getElementById('displayBreakEven').innerText = "$" + breakEven.toFixed(2);
-    document.getElementById('displayProfit').innerText = "+$" + profitAmt.toFixed(2);
+    document.getElementById('totalMaterials').innerText = currencySymbol + totalMaterialCost.toFixed(2);
+    document.getElementById('totalLaborOps').innerText = currencySymbol + totalOps.toFixed(2);
+    document.getElementById('displayRetail').innerText = currencySymbol + retailPrice.toFixed(2);
+    document.getElementById('displayBreakEven').innerText = currencySymbol + breakEven.toFixed(2);
+    document.getElementById('displayProfit').innerText = (profitAmt >= 0 ? "+" : "-") + currencySymbol + Math.abs(profitAmt).toFixed(2);
     document.getElementById('displayMargin').innerText = marginPercent + "%";
     document.getElementById('profitDisplay').innerText = marginPercent + "%";
 
